@@ -1,0 +1,24 @@
+# Model tab: the offline model card is there and shows Ready (downloaded) or a download button.
+# Does not start a download (1.15 GB).
+appId: com.raghavsatyadev.grammarfix
+name: Model status
+---
+- launchApp:
+    stopApp: false
+- runFlow:  # a fresh install opens on the first-launch onboarding
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn: "Skip"
+- tapOn: "Model"
+- assertVisible: "Offline model"
+- runFlow:
+    when:
+      visible: "Ready"
+    commands:
+      - assertVisible: "Delete model"
+- runFlow:
+    when:
+      notVisible: "Ready"
+    commands:
+      - assertVisible: "Download model.*"

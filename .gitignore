@@ -1,0 +1,140 @@
+/.idea
+/.gradle
+/.externalNativeBuild
+/.cxx
+build
+bin/
+/captures
+*.iml
+*.jks
+*.ini
+*.apk
+*.aab
+*.DS_Store
+*.kotlin
+beta
+debug
+keystore.gradle
+local.properties
+release
+secret.properties
+composeApp/kotzilla.json
+
+### Objective-C template
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+
+## Obj-C/Swift specific
+*.hmap
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+package-lock.json
+package.json
+
+# CocoaPods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+Pods/
+#
+# Add this line if you want to avoid checking in source code from the Xcode workspace
+*.xcworkspace
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts
+
+Carthage/Build/
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo.
+# Instead, use fastlane to re-generate the screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/#source-control
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+### Swift template
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+#
+# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
+# Packages/
+# Package.pins
+# Package.resolved
+# *.xcodeproj
+#
+# Xcode automatically generates this directory with a .xcworkspacedata file and xcuserdata
+# hence it is not needed unless you have added a package configuration file to your project
+# .swiftpm
+
+.build/
+
+# CocoaPods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+# Pods/
+#
+# Add this line if you want to avoid checking in source code from the Xcode workspace
+# *.xcworkspace
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts
+
+node_modules
+package-lock.json
+package.json
+# Ephemeral AI-generated temporary files (screenshots, dumps, scratch - safe to delete anytime)
+/tmp/
+tmp/
+
+# Long-term persistent project lifecycle files (device serials, coords, memory notes - untracked)
+/memory/
+memory/
+
+# Local device-test cache & legacy progress notes - never committed
+.device-cache/
+progress/
+.remember/
+
+# Local CI tooling cache (ktfmt jars)
+.cache/
+
+# Never commit credentials
+.env
+.env.*
+!.env.example
+
+# Personal Claude Code overrides (shared settings live in .claude/settings.json)
+.claude/settings.local.json
+
+# Claude Code only scans .claude/skills/, so scripts/setup-env links each .agents/skills/<name>
+# there. The links are per-machine (junctions on Windows, symlinks elsewhere), never committed.
+.claude/skills/

@@ -1,0 +1,193 @@
+package com.raghavsatyadev.grammarfix.data
+
+import androidx.room3.ColumnInfo
+import androidx.room3.Dao
+import androidx.room3.Entity
+import androidx.room3.Index
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.PrimaryKey
+import androidx.room3.Query
+
+/**
+ * One correction the user actually received, as counts.
+ *
+ * **No user text is stored here, ever** — not the input, not the output, not the words that were
+ * fixed, and not an error message. GrammarFix reads everything its user types in every app; a
+ * queryable copy of their prose would be a different and far worse product. Every column below is a
+ * number, a timestamp, or one of our own enum names. The whitelist is pinned by a test
+ * (`CorrectionEventDaoTest.theTableStoresNoUserText`), so adding a text column fails the test run
+ * rather than shipping quietly.
+ *
+ * Rows never leave the device. There is no upload, no Firebase event and no network call anywhere
+ * on this path.
+ *
+ * Corrections made in the Playground are not written at all — see
+ * [com.raghavsatyadev.grammarfix.engine.CorrectionSource].
+ *
+ * [tonePresetId] deliberately carries **no foreign key** to `tone_preset`. Saving tones runs
+ * `replaceUserTones`, which deletes every custom preset before reinserting it; a cascade would take
+ * the user's whole correction history with it, and a restriction would make saving tones fail. A
+ * reader joins on the id and tolerates a tone that no longer exists.
+ *
+ * The index on [at] is what keeps "last 30 days" and "this week against last week" off a full scan.
+ * Day bucketing is left to the query — SQLite's own `date(at / 1000, 'unixepoch', 'localtime')`
+ * groups by the device's local date with no second column to keep in step. No rollup table is built
+ * until a dashboard is measurably slow.
+ */
+@Entity(tableName = "correction_event", indices = [Index(value = ["at"])])
+data class CorrectionEventEntity(
+  @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+  /** When the correction finished, epoch milliseconds UTC. */
+  val at: Long,
+  /** A [com.raghavsatyadev.grammarfix.engine.CorrectionSource] name; never `PLAYGROUND`. */
+  val source: String,
+  /** Joins `tone_preset.id` by value only; see the class note on why there is no foreign key. */
+  @ColumnInfo(name = "tone_preset_id") val tonePresetId: String,
+  /** A [com.raghavsatyadev.grammarfix.engine.EngineMode] name. */
+  val engine: String,
+  @ColumnInfo(name = "words_in") val wordsIn: Int,
+  @ColumnInfo(name = "words_out") val wordsOut: Int,
+  @ColumnInfo(name = "chars_in") val charsIn: Int,
+  @ColumnInfo(name = "chars_out") val charsOut: Int,
+  @ColumnInfo(name = "sentences_in") val sentencesIn: Int,
+  @ColumnInfo(name = "sentences_out") val sentencesOut: Int,
+  /** Every diff that is not `UNCHANGED`: the "typos fixed" headline. */
+  @ColumnInfo(name = "fixes_total") val fixesTotal: Int,
+  @ColumnInfo(name = "fixes_replaced") val fixesReplaced: Int,
+  @ColumnInfo(name = "fixes_inserted") val fixesInserted: Int,
+  @ColumnInfo(name = "fixes_deleted") val fixesDeleted: Int,
+  @ColumnInfo(name = "latency_ms") val latencyMs: Long,
+  @ColumnInfo(name = "tokens_per_second") val tokensPerSecond: Float,
+  /** How many requests the text was split into; 0 when inference never returned. */
+  val chunks: Int,
+  /** Whether the model was allowed its reasoning step. */
+  val thinking: Boolean,
+  val succeeded: Boolean,
+  /**
+   * A [com.raghavsatyadev.grammarfix.engine.CorrectionErrorCode] name, or null when it succeeded.
+   *
+   * A code rather than the message: today's messages are ours, but a driver could one day surface
+   * one carrying the user's own text, and a column that can never hold prose cannot leak it.
+   */
+  @ColumnInfo(name = "error_code") val errorCode: String?,
+  /**
+   * Whether the user actually received this correction.
+   *
+   * One edit fires several accessibility events, and an inference that is still running when the
+   * field changes produces an answer for text that no longer exists. That answer is thrown away
+   * rather than shown — but it really did run, and for how-fast and how-often-does-it-fail
+   * questions it is data. So the row is kept and marked here, and anything counting *corrections*
+   * (issue #20's charts) filters on `delivered = 1` while anything counting *inferences* does not.
+   *
+   * Rows written before this column existed default to 1: they were charted as corrections, and
+   * inventing a verdict for them now would be a worse answer than the one already given.
+   */
+  @ColumnInfo(name = "delivered", defaultValue = "1") val delivered: Boolean = true,
+)
+
+@Dao
+interface CorrectionEventDao {
+
+  /**
+   * Appends one correction.
+   *
+   * `IGNORE` rather than `@Upsert`: Room 3.1.0-alpha01's upsert throws a null-message
+   * `SQLException` against `BundledSQLiteDriver` the moment it takes its update path, so it is used
+   * nowhere in this app. [CorrectionEventEntity.id] is autogenerated, so the conflict path is
+   * unreachable in normal use; `IGNORE` means that even a row replayed with an id it already holds
+   * costs the user a missing statistic rather than a lost grammar fix.
+   *
+   * Returns the new row id, or -1 when an existing row was left alone.
+   */
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
+  suspend fun insert(event: CorrectionEventEntity): Long
+
+  @Query("SELECT * FROM correction_event ORDER BY at, id")
+  suspend fun all(): List<CorrectionEventEntity>
+
+  @Query("SELECT COUNT(*) FROM correction_event") suspend fun count(): Int
+
+  /**
+   * How many corrections the user actually received, as opposed to how many inferences ran.
+   *
+   * This is the count a "corrections this week" figure is built from; [count] answers the different
+   * question of how much work the model did. Keeping them apart is the whole point of
+   * [CorrectionEventEntity.delivered].
+   */
+  @Query("SELECT COUNT(*) FROM correction_event WHERE delivered = 1")
+  suspend fun deliveredCount(): Int
+
+  /**
+   * Everything the headline tiles need for one window, in one pass.
+   *
+   * Only delivered, successful corrections count. A result the overlay threw away was never seen by
+   * the user (see [CorrectionEventEntity.delivered]) and a failed run carries no counts at all, so
+   * either would quietly drag "how clean your writing came in" towards a number nobody earned.
+   *
+   * `COALESCE` because `SUM` over no rows is null, and a fresh install is exactly that.
+   */
+  @Query(
+    """
+    SELECT COUNT(*) AS corrections,
+           COALESCE(SUM(words_in), 0) AS wordsIn,
+           COALESCE(SUM(fixes_total), 0) AS fixes,
+           COALESCE(SUM(fixes_replaced), 0) AS replaced,
+           COALESCE(SUM(fixes_inserted), 0) AS inserted,
+           COALESCE(SUM(fixes_deleted), 0) AS deleted
+    FROM correction_event
+    WHERE delivered = 1 AND succeeded = 1 AND at >= :from AND at < :until
+    """
+  )
+  suspend fun totalsBetween(from: Long, until: Long): CorrectionTotals
+
+  /**
+   * The same counts split by local day, for the activity chart.
+   *
+   * The bucket is *days ago* rather than a date string: SQLite converts both ends to the device's
+   * local date and subtracts, so the caller gets an index into its own array without doing calendar
+   * arithmetic in three source sets. [now] is passed in rather than read as `'now'` inside the
+   * query, so a test pins the day the chart ends on.
+   *
+   * Days with nothing in them are absent, not zero. The caller fills the gaps: a chart that skips
+   * the quiet days would lie about the shape of the week.
+   */
+  @Query(
+    """
+    SELECT CAST(
+             julianday(date(:now / 1000, 'unixepoch', 'localtime'))
+             - julianday(date(at / 1000, 'unixepoch', 'localtime'))
+           AS INTEGER) AS daysAgo,
+           COALESCE(SUM(words_in), 0) AS wordsIn,
+           COALESCE(SUM(fixes_total), 0) AS fixes
+    FROM correction_event
+    WHERE delivered = 1 AND succeeded = 1 AND at >= :from AND at < :now
+    GROUP BY daysAgo
+    ORDER BY daysAgo
+    """
+  )
+  suspend fun dailyBuckets(from: Long, now: Long): List<DayBucket>
+
+  /**
+   * Drops rows older than [cutoff] (epoch millis).
+   *
+   * Nothing schedules this yet. An always-on assistant writes thousands of rows a month, so a trim
+   * is wanted eventually — but retention is a product decision, and deleting a user's history on a
+   * timer they never agreed to is not one to make silently.
+   */
+  @Query("DELETE FROM correction_event WHERE at < :cutoff")
+  suspend fun deleteOlderThan(cutoff: Long): Int
+}
+
+/** What the model did over one window: the figures behind the Insights tiles. */
+data class CorrectionTotals(
+  val corrections: Int,
+  val wordsIn: Int,
+  val fixes: Int,
+  val replaced: Int,
+  val inserted: Int,
+  val deleted: Int,
+)
+
+/** One local day of [CorrectionTotals], counted back from the day the query was run. */
+data class DayBucket(val daysAgo: Int, val wordsIn: Int, val fixes: Int)

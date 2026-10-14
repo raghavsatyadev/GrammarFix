@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalDependencies">
+    <plugin id="String Manipulation" />
+    <plugin id="com.bhuvaneshw.kmp.projectview" />
+    <plugin id="com.chylex.intellij.inspectionlens" />
+    <plugin id="com.clutcher.comments_highlighter" />
+    <plugin id="com.dsoftware.ghtoolbar" />
+    <plugin id="com.facebook.ktfmt_idea_plugin" />
+    <plugin id="com.github.copilot" />
+    <plugin id="com.godwin.kdocer" />
+    <plugin id="com.hiyunhong.gradlekiller" />
+    <plugin id="com.intellij.marketplace" />
+    <plugin id="com.jetbrains.kmm" />
+    <plugin id="com.mallowigi.colorHighlighter" />
+    <plugin id="com.nasller.CodeGlancePro" />
+    <plugin id="com.suusan2go.kotlin-fill-class" />
+    <plugin id="dev.polek.adbwifi" />
+    <plugin id="io.github.raghavsatyadev.adbidea" />
+    <plugin id="mobi.hsz.idea.gitignore" />
+    <plugin id="nl.bryanderidder.regexrenamefiles" />
+    <plugin id="org.jetbrains.plugins.github" />
+    <plugin id="org.norbye.tor.kdocformatter" />
+    <plugin id="wu.seal.tool.jsontokotlin" />
+    <plugin id="zielu.gittoolbox" />
+  </component>
+</project>

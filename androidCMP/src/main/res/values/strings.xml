@@ -1,0 +1,20 @@
+<resources>
+    <!-- Floating Widget Service -->
+    <string name="channel_floating_widget_name">Floating Assistant Widget</string>
+    <string name="notification_floating_widget_title">GrammarFix Assistant Active</string>
+    <string name="notification_floating_widget_text">Live text suggestion overlay is active</string>
+    <string name="toast_fix_applied">Fix applied</string>
+    <string name="toast_applied_all_fixes">Applied all %1$d fix(es)</string>
+    <string name="toast_rewrite_applied">Rewrite applied</string>
+    <string name="toast_text_stale">Text changed. Re-checking…</string>
+    <string name="toast_no_field">Tap into the text field to apply suggestions</string>
+
+    <!-- Model Download Foreground Service -->
+    <string name="channel_model_download_name">Model Download Service Channel</string>
+    <string name="notification_model_download_title">Qwen3 1.7B Model Downloader</string>
+    <string name="notification_model_download_starting">Starting model download...</string>
+    <string name="notification_model_download_progress">Downloading Qwen3 1.7B (%1$d%%) - %2$.1f MB/s</string>
+    <string name="notification_model_download_completed">Qwen3 1.7B Model Download Completed! Ready offline.</string>
+    <string name="notification_model_download_error">Download error: %1$s</string>
+    <string name="notification_unknown_error">Unknown error</string>
+</resources>

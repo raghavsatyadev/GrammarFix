@@ -1,0 +1,11 @@
+# EditorConfig configuration to align IDE formatting and import optimization with ktfmt
+root = true
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 2
+ij_continuation_indent_size = 2
+max_line_length = 100
+# Force IntelliJ/Android Studio to sort imports alphabetically in a single group,
+# aligning the IDE's "Optimize Imports" behavior with ktfmt
+ij_kotlin_imports_layout = *

@@ -1,0 +1,24 @@
+# Playground: type a sentence with one error and wait for the on-device model's suggestion.
+# Needs the offline model (model-status.yaml). The first check after a cold start can take ~30 s.
+appId: com.raghavsatyadev.grammarfix
+name: Playground check
+---
+- launchApp:
+    stopApp: false
+- runFlow:  # a fresh install opens on the first-launch onboarding
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn: "Skip"
+- tapOn: "Playground"
+- tapOn:
+    text: "Clear text"
+    optional: true
+- tapOn: "Type or paste a sentence to check.*"
+- inputText: "Hello how is you?"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Suggestions"
+    direction: DOWN
+    timeout: 90000
+- assertVisible: ".*are.*"

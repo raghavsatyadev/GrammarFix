@@ -1,0 +1,13 @@
+TEAM_ID=
+
+PRODUCT_NAME=SCUS
+PRODUCT_BUNDLE_IDENTIFIER=com.raghavsatyadev.grammarfix
+
+CURRENT_PROJECT_VERSION=1
+MARKETING_VERSION=1.0
+
+OTHER_LDFLAGS = $(inherited) -framework SwiftUI
+
+// Explicitly add search paths for transitive dependencies if Pods setup is inconsistent
+FRAMEWORK_SEARCH_PATHS = $(inherited) $(BUILT_PRODUCTS_DIR)/**
+LIBRARY_SEARCH_PATHS = $(inherited) $(BUILT_PRODUCTS_DIR)/**

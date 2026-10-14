@@ -1,0 +1,135 @@
+name: CI
+
+# DISABLED: GitHub Actions is blocked on org billing ("recent account payments have
+# failed or your spending limit needs to be increased"), so every run fails in ~3s
+# without executing a step. Automatic triggers are off until that is resolved.
+#
+# Until then run the same checks locally: scripts/ci-local.sh
+#
+# To re-enable, uncomment the push/pull_request triggers below.
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ master, main, development ]
+  # pull_request:
+  #   branches: [ master, main, development ]
+
+jobs:
+  ktfmt-check:
+    name: ktfmt Lint Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Disable shallow clone to ensure git diff can find merge base / commits
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache ktfmt
+        id: cache-ktfmt
+        uses: actions/cache@v5
+        with:
+          path: .cache/ktfmt
+          key: ktfmt-cache-${{ runner.os }}
+
+      - name: Download ktfmt
+        run: |
+          mkdir -p .cache/ktfmt
+          # Query Maven Central for the latest ktfmt release version
+          latest_version=$(curl -fsSL --connect-timeout 3 "https://repo1.maven.org/maven2/com/facebook/ktfmt/maven-metadata.xml" | sed -n 's/.*<release>\([^<]*\)<\/release>.*/\1/p' || true)
+          
+          if [ -n "$latest_version" ]; then
+            KTFMT_JAR=".cache/ktfmt/ktfmt-${latest_version}-with-dependencies.jar"
+            if [ ! -f "$KTFMT_JAR" ]; then
+              echo "Downloading new ktfmt version ${latest_version}..."
+              tmp_jar="${KTFMT_JAR}.tmp.$$"
+              if curl -fsSL --connect-timeout 3 "https://repo1.maven.org/maven2/com/facebook/ktfmt/${latest_version}/ktfmt-${latest_version}-with-dependencies.jar" -o "$tmp_jar"; then
+                # Keep cache clean by removing older versions
+                rm -f .cache/ktfmt/ktfmt-*-with-dependencies.jar
+                mv "$tmp_jar" "$KTFMT_JAR"
+              else
+                rm -f "$tmp_jar"
+                echo "Failed to download version ${latest_version}."
+              fi
+            fi
+          fi
+          
+          # If online check/download failed, locate the newest cached version
+          if [ ! -f "${KTFMT_JAR:-}" ]; then
+            cached_jar=$(ls -1 .cache/ktfmt/ktfmt-*-with-dependencies.jar 2>/dev/null | sort -V | tail -n 1 || true)
+            if [ -n "$cached_jar" ]; then
+              KTFMT_JAR="$cached_jar"
+              echo "Offline/download failed. Using cached version: ${KTFMT_JAR##*/}"
+            else
+              echo "Error: No version of ktfmt is cached and Maven Central is unreachable."
+              exit 1
+            fi
+          fi
+          
+          echo "KTFMT_JAR=$KTFMT_JAR" >> $GITHUB_ENV
+
+      - name: Verify Kotlin formatting with ktfmt
+        run: |
+          set -e
+          # Determine the commit range to check
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Pull request event. Comparing with origin/${{ github.base_ref }}..."
+            git fetch origin ${{ github.base_ref }}
+            CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ github.base_ref }}...HEAD -- '*.kt' '*.kts' || true)
+          else
+            if [ -z "${{ github.event.before }}" ] || [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+              echo "Initial push or new branch. Checking recent Kotlin files..."
+              CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR HEAD~1..HEAD -- '*.kt' '*.kts' || git ls-files '*.kt' '*.kts' || true)
+            else
+              echo "Push to existing branch. Comparing ${{ github.event.before }} with ${{ github.sha }}..."
+              CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR ${{ github.event.before }}..${{ github.sha }} -- '*.kt' '*.kts' || true)
+            fi
+          fi
+          
+          # Filter to ensure we only check files that exist on disk (exclude deleted files)
+          VALID_FILES=""
+          for file in $CHANGED_FILES; do
+            if [ -f "$file" ]; then
+              VALID_FILES="$VALID_FILES $file"
+            fi
+          done
+          
+          if [ -z "$VALID_FILES" ]; then
+            echo "No Kotlin files (*.kt, *.kts) changed in this run exist on disk."
+            exit 0
+          fi
+          
+          echo "Checking formatting for the following files:"
+          echo "$VALID_FILES"
+          
+          # Run ktfmt in dry-run mode on existing files
+          java -jar "$KTFMT_JAR" --google-style --dry-run --set-exit-if-changed $VALID_FILES
+
+  build-app:
+    name: Build & Verify Compilation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Compile Kotlin
+        run: ./gradlew :androidCMP:compileDebugKotlin --no-daemon --console=plain
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"

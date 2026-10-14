@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "artemis": {
+      "command": "uv",
+      "args": ["--directory", "${ARTEMIS_HOME}", "run", "python", "-m", "mcp_server"],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "ARTEMIS_DESKTOP_NOTIFY": "true"
+      }
+    }
+  }
+}

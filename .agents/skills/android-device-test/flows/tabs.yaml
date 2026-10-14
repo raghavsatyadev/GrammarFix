@@ -1,0 +1,22 @@
+# Visit every tab and check one landmark on each. Tabs are icons; Maestro matches their
+# content descriptions. Run: maestro test .agents/skills/android-device-test/flows/tabs.yaml
+appId: com.raghavsatyadev.grammarfix
+name: Tabs
+---
+- launchApp:
+    stopApp: false  # a force-stop removes GrammarAccessibilityService from the enabled list
+- runFlow:  # a fresh install opens on the first-launch onboarding
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn: "Skip"
+- tapOn: "Model"
+- assertVisible: "Offline model"
+- tapOn: "Insights"
+- assertVisible: "Words polished"
+- tapOn: "Tones"
+- assertVisible: "Tone detection"
+- tapOn: "Setup"
+- assertVisible: "Floating assistant"
+- tapOn: "Playground"
+- assertVisible: "Try a sample"
