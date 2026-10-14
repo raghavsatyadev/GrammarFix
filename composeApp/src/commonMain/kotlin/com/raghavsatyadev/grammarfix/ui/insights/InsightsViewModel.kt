@@ -3,6 +3,7 @@ package com.raghavsatyadev.grammarfix.ui.insights
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.raghavsatyadev.grammarfix.data.AcceptedFixDao
 import com.raghavsatyadev.grammarfix.data.CorrectionEventDao
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,7 @@ data class InsightsUiState(
  */
 class InsightsViewModel(
   private val dao: CorrectionEventDao,
+  private val acceptedDao: AcceptedFixDao,
   private val now: () -> Long = { Clock.System.now().toEpochMilliseconds() },
 ) : ViewModel() {
 
@@ -48,11 +50,15 @@ class InsightsViewModel(
   private suspend fun load(): Insights {
     val nowMs = now()
     val window = TILE_DAYS * DAY_MS
+    // A day more than the chart draws, so the oldest column is whole however the local day falls.
+    val chartFrom = nowMs - (ACTIVITY_DAYS + 1) * DAY_MS
     return insightsOf(
       current = dao.totalsBetween(nowMs - window, nowMs),
       previous = dao.totalsBetween(nowMs - 2 * window, nowMs - window),
-      // A day more than the chart draws, so the oldest column is whole however the local day falls.
-      buckets = dao.dailyBuckets(nowMs - (ACTIVITY_DAYS + 1) * DAY_MS, nowMs),
+      buckets = dao.dailyBuckets(chartFrom, nowMs),
+      accepted = acceptedDao.totalsBetween(nowMs - window, nowMs),
+      previousAccepted = acceptedDao.totalsBetween(nowMs - 2 * window, nowMs - window),
+      acceptedBuckets = acceptedDao.dailyBuckets(chartFrom, nowMs),
     )
   }
 

@@ -1,6 +1,8 @@
 package com.raghavsatyadev.grammarfix.ui.insights
 
 import androidx.compose.runtime.Immutable
+import com.raghavsatyadev.grammarfix.data.AcceptedDayBucket
+import com.raghavsatyadev.grammarfix.data.AcceptedTotals
 import com.raghavsatyadev.grammarfix.data.CorrectionTotals
 import com.raghavsatyadev.grammarfix.data.DayBucket
 
@@ -33,6 +35,7 @@ data class Metric(val value: Int, val previous: Int) {
 @Immutable
 data class Insights(
   val wordsPolished: Metric,
+  /** Fixes the user accepted, not fixes the model suggested: a dismissed one was never applied. */
   val fixesApplied: Metric,
   /**
    * Share of words that arrived already right, as a percentage — "how clean your writing came in".
@@ -43,8 +46,9 @@ data class Insights(
   val previousCleanPercent: Int?,
   /** Words per day, oldest first, [ACTIVITY_DAYS] long. Quiet days are zero, not missing. */
   val wordsPerDay: List<Int>,
-  /** Fixes per day over the same days, for the second tile's sparkline. */
+  /** Accepted fixes per day over the same days, for the second tile's sparkline. */
   val fixesPerDay: List<Int>,
+  /** The accepted fixes in the reported window, by kind. */
   val replaced: Int,
   val inserted: Int,
   val deleted: Int,
@@ -68,6 +72,9 @@ data class Insights(
 /**
  * Turns the database's answers into the figures the screen shows.
  *
+ * Words and cleanliness come from what the model checked ([current], [previous], [buckets]); the
+ * fixes come from what the user accepted ([accepted], [previousAccepted], [acceptedBuckets]).
+ *
  * [buckets] arrives keyed by how many days ago each one is and with the quiet days missing
  * entirely; they become zeroes here, oldest first, because a chart that closes the gaps would show
  * a busy week where there was a quiet one.
@@ -76,6 +83,9 @@ fun insightsOf(
   current: CorrectionTotals,
   previous: CorrectionTotals,
   buckets: List<DayBucket>,
+  accepted: AcceptedTotals = AcceptedTotals.None,
+  previousAccepted: AcceptedTotals = AcceptedTotals.None,
+  acceptedBuckets: List<AcceptedDayBucket> = emptyList(),
   days: Int = ACTIVITY_DAYS,
 ): Insights {
   val words = MutableList(days) { 0 }
@@ -83,22 +93,23 @@ fun insightsOf(
   for (bucket in buckets) {
     // Oldest first: the day the query ran is the last column of the chart.
     val index = days - 1 - bucket.daysAgo
-    if (index in 0 until days) {
-      words[index] = bucket.wordsIn
-      fixes[index] = bucket.fixes
-    }
+    if (index in 0 until days) words[index] = bucket.wordsIn
+  }
+  for (bucket in acceptedBuckets) {
+    val index = days - 1 - bucket.daysAgo
+    if (index in 0 until days) fixes[index] = bucket.fixes
   }
 
   return Insights(
     wordsPolished = Metric(current.wordsIn, previous.wordsIn),
-    fixesApplied = Metric(current.fixes, previous.fixes),
+    fixesApplied = Metric(accepted.fixes, previousAccepted.fixes),
     cleanPercent = cleanPercentOf(current),
     previousCleanPercent = cleanPercentOf(previous),
     wordsPerDay = words,
     fixesPerDay = fixes,
-    replaced = current.replaced,
-    inserted = current.inserted,
-    deleted = current.deleted,
+    replaced = accepted.replaced,
+    inserted = accepted.inserted,
+    deleted = accepted.deleted,
     corrections = current.corrections,
   )
 }

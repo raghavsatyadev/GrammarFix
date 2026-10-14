@@ -804,6 +804,17 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
       service.overlayView?.post { service.redock() }
     }
 
+    /**
+     * GrammarFix's own screens came to the front, or left it. The overlay hides over them: there is
+     * no field there it would check, and the bubble covered the Insights tiles.
+     */
+    fun onOwnAppInFront(inFront: Boolean) {
+      val service = instance ?: return
+      service.overlayView?.post {
+        service.overlayView?.visibility = if (inFront) View.GONE else View.VISIBLE
+      }
+    }
+
     fun onWordCleared(text: String = "") {
       instance?.let { service ->
         service.overlayView?.post {

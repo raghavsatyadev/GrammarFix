@@ -239,7 +239,7 @@ class CorrectionEventDaoTest {
     assertEquals(1, migrated.correctionEventDao().count())
 
     closeDatabase()
-    assertEquals(4L, userVersion())
+    assertEquals(5L, userVersion())
   }
 
   /**
@@ -262,7 +262,7 @@ class CorrectionEventDaoTest {
     assertEquals(1, migrated.correctionEventDao().deliveredCount())
 
     closeDatabase()
-    assertEquals(4L, userVersion())
+    assertEquals(5L, userVersion())
   }
 
   /** The exact DDL Room exported for version 1, plus the rows a real user would have. */

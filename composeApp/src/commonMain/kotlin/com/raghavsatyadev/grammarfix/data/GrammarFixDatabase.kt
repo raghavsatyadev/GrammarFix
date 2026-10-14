@@ -31,14 +31,16 @@ import androidx.room3.RoomDatabaseConstructor
       AppSettingEntity::class,
       CorrectionEventEntity::class,
       ToneEventEntity::class,
+      AcceptedFixEntity::class,
     ],
-  version = 4,
+  version = 5,
   exportSchema = true,
   autoMigrations =
     [
       AutoMigration(from = 1, to = 2),
       AutoMigration(from = 2, to = 3),
       AutoMigration(from = 3, to = 4),
+      AutoMigration(from = 4, to = 5),
     ],
 )
 @ConstructedBy(GrammarFixDatabaseConstructor::class)
@@ -48,6 +50,8 @@ abstract class GrammarFixDatabase : RoomDatabase() {
   abstract fun appSettingDao(): AppSettingDao
 
   abstract fun correctionEventDao(): CorrectionEventDao
+
+  abstract fun acceptedFixDao(): AcceptedFixDao
 
   abstract fun toneEventDao(): ToneEventDao
 }

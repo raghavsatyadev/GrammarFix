@@ -3,6 +3,7 @@ package com.raghavsatyadev.grammarfix.library.support.di
 import com.raghavsatyadev.grammarfix.data.AppSettingsRepository
 import com.raghavsatyadev.grammarfix.data.GrammarFixDatabase
 import com.raghavsatyadev.grammarfix.data.openGrammarFixDatabase
+import com.raghavsatyadev.grammarfix.engine.AcceptedFixRecorder
 import com.raghavsatyadev.grammarfix.engine.CorrectionRecorder
 import com.raghavsatyadev.grammarfix.engine.GrammarAssistantViewModel
 import com.raghavsatyadev.grammarfix.engine.InferenceEngine
@@ -34,6 +35,9 @@ val appModule = module {
   single { openGrammarFixDatabase() }
   // The Insights tab reads the analytics table directly; there is nothing to repository over.
   single { get<GrammarFixDatabase>().correctionEventDao() }
+  single { get<GrammarFixDatabase>().acceptedFixDao() }
+  // Fixes the user accepted in the overlay: what "Fixes applied" counts.
+  single { AcceptedFixRecorder(get()) }
   single<TonePresetStore> { RoomTonePresetStore(get()) }
   // Correction statistics, written to the same database and never sent anywhere.
   single<CorrectionRecorder> { RoomCorrectionRecorder(get()) }
@@ -54,7 +58,7 @@ val appModule = module {
   viewModelOf(::ToneViewModel)
   // Not `viewModelOf`: the clock is a constructor default a test replaces, and the reflective
   // builder would try to resolve it from the graph.
-  viewModel { InsightsViewModel(get()) }
+  viewModel { InsightsViewModel(get(), get()) }
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {

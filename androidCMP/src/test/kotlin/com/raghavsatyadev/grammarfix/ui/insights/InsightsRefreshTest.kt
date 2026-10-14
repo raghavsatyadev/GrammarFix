@@ -6,6 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import com.raghavsatyadev.grammarfix.data.AcceptedDayBucket
+import com.raghavsatyadev.grammarfix.data.AcceptedFixDao
+import com.raghavsatyadev.grammarfix.data.AcceptedFixEntity
+import com.raghavsatyadev.grammarfix.data.AcceptedTotals
 import com.raghavsatyadev.grammarfix.data.CorrectionEventDao
 import com.raghavsatyadev.grammarfix.data.CorrectionEventEntity
 import com.raghavsatyadev.grammarfix.data.CorrectionTotals
@@ -48,10 +52,22 @@ class InsightsRefreshTest {
     override suspend fun deleteOlderThan(cutoff: Long) = 0
   }
 
+  private class NoAcceptedFixes : AcceptedFixDao {
+    override suspend fun insertAll(fixes: List<AcceptedFixEntity>) = Unit
+
+    override suspend fun deleteLatest(count: Int) = 0
+
+    override suspend fun all() = emptyList<AcceptedFixEntity>()
+
+    override suspend fun totalsBetween(from: Long, until: Long) = AcceptedTotals.None
+
+    override suspend fun dailyBuckets(from: Long, now: Long) = emptyList<AcceptedDayBucket>()
+  }
+
   @Test
   fun reopeningTheTabShowsCorrectionsMadeWhileItWasClosed() {
     val dao = FakeDao()
-    val viewModel = InsightsViewModel(dao)
+    val viewModel = InsightsViewModel(dao, NoAcceptedFixes())
     var tabShown by mutableStateOf(true)
     composeTestRule.setContent {
       if (tabShown) InsightsScreen(contentPadding = PaddingValues(), viewModel = viewModel)

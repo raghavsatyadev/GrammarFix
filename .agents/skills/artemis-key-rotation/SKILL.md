@@ -21,14 +21,21 @@ M=memory/artemis.env; E=../artemis/.env
 CUR=$(grep '^GEMINI_API_KEY=' "$E" | cut -d= -f2-)
 K1=$(grep '^GEMINI_API_KEY_1=' "$M" | cut -d= -f2-); K2=$(grep '^GEMINI_API_KEY_2=' "$M" | cut -d= -f2-)
 [ "$CUR" = "$K1" ] && NEW=$K2 || NEW=$K1
-cp "$E" "$E.bak-$(date +%Y%m%d%H%M)"
+cp "$E" "$E.bak"
 sed -i "s|^GEMINI_API_KEY=.*|GEMINI_API_KEY=$NEW|" "$E" "$M"
+# The backup only guards the sed; drop it once the new line is in place, restore it otherwise.
+grep -q "^GEMINI_API_KEY=$NEW$" "$E" && rm -f "$E.bak"* || mv "$E.bak" "$E"
 echo "ARTEMIS now on key ending ${NEW: -4}"
 ```
 
 Then:
 1. Update the headings in `memory/artemis-keys.md` to say which key is active and which ran out, with the date. Edit it with a script that writes a raw string (Python `r'...'`); sed and perl turn the `\a` in `..\artemis\.env` into a bell character.
-2. Ask the user to restart the ARTEMIS MCP server (`/mcp`). ARTEMIS only reads `.env` at startup.
-3. Delete old `.env.bak-*` copies in the ARTEMIS folder once the new key is confirmed working.
+2. Restart the ARTEMIS task daemon yourself; it reads `.env` only at startup, and restarting the
+   MCP server (`/mcp`) leaves the daemon on port 8000 running with the old key. Stop the process
+   listening on port 8000 (PowerShell: `Get-NetTCPConnection -LocalPort 8000 -State Listen`, then
+   `Stop-Process -Id <OwningProcess>`); the next `mobile_run_task` starts a fresh one. A run still
+   failing with the old `retryDelay` means the daemon was not restarted.
+3. A 503 "model is experiencing high demand" is Gemini overload, not quota. Rotating does not help;
+   retry later or fall back to adb.
 
 If both keys have run out, stop and tell the user. Fall back to plain adb for device checks (see [android-device-test](../android-device-test/SKILL.md)).

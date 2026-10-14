@@ -8,6 +8,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import com.raghavsatyadev.grammarfix.data.AppSettingsRepository
+import com.raghavsatyadev.grammarfix.engine.AcceptedFixRecorder
 import com.raghavsatyadev.grammarfix.engine.GrammarEngine
 import com.raghavsatyadev.grammarfix.engine.SuggestionKey
 import com.raghavsatyadev.grammarfix.engine.TextAnalysis
@@ -138,6 +139,10 @@ class GrammarAccessibilityService : AccessibilityService() {
   private val settings: AppSettingsRepository? by lazy {
     runCatching { KoinPlatform.getKoin().get<AppSettingsRepository>() }.getOrNull()
   }
+  /** Counts the fixes the user accepts, for Insights. Null only if the app's graph is not up. */
+  private val acceptedFixes: AcceptedFixRecorder? by lazy {
+    runCatching { KoinPlatform.getKoin().get<AcceptedFixRecorder>() }.getOrNull()
+  }
 
   override fun onServiceConnected() {
     super.onServiceConnected()
@@ -147,6 +152,15 @@ class GrammarAccessibilityService : AccessibilityService() {
 
   override fun onAccessibilityEvent(event: AccessibilityEvent?) {
     if (event == null) return
+
+    if (
+      event.eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED ||
+        event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+    ) {
+      frontAppPackage()?.let {
+        FloatingWidgetService.onOwnAppInFront(isOurOwnField(it, packageName))
+      }
+    }
 
     // The keyboard opening or closing moves the edge the overlay's sheet is docked against, so the
     // sheet has to follow it. This never schedules an analysis: window changes fire constantly, and
@@ -169,6 +183,16 @@ class GrammarAccessibilityService : AccessibilityService() {
       scheduleAnalysis(focusedNode)
     }
   }
+
+  /**
+   * The package of the app the user is looking at: the focused application window's. The overlay's
+   * own windows are not application windows, so they never count as GrammarFix being in front.
+   */
+  private fun frontAppPackage(): CharSequence? =
+    windows
+      .firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused }
+      ?.root
+      ?.packageName
 
   private fun focusedEditable(): AccessibilityNodeInfo? =
     rootInActiveWindow?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.takeIf { it.isEditable }
@@ -328,6 +352,9 @@ class GrammarAccessibilityService : AccessibilityService() {
     analysisJob?.cancel()
     pendingText = null
     if (!writeText(node, entry.before, entry.scope)) return ApplyResult.NO_FIELD
+    acceptedFixes?.let { recorder ->
+      serviceScope.launch { recorder.unrecord(entry.acceptedFixes) }
+    }
     reviewScope = entry.scope
     publish(entry.analysis, entry.before)
     return ApplyResult.APPLIED
@@ -405,7 +432,16 @@ class GrammarAccessibilityService : AccessibilityService() {
     val scope = reviewScope
     val newScope = scope?.shiftedBy(applied.edits)
     if (!writeText(node, newText, selection = newScope)) return ApplyResult.NO_FIELD
-    pushUndo(UndoEntry(before = current, analysis = analysis, scope = scope, after = newText))
+    pushUndo(
+      UndoEntry(
+        before = current,
+        analysis = analysis,
+        scope = scope,
+        after = newText,
+        acceptedFixes = fixes.size,
+      )
+    )
+    acceptedFixes?.let { recorder -> serviceScope.launch { recorder.record(fixes) } }
     reviewScope = newScope
     publish(applied.analysis, newText)
     return ApplyResult.APPLIED
@@ -533,6 +569,8 @@ class GrammarAccessibilityService : AccessibilityService() {
     val analysis: TextAnalysis?,
     val scope: IntRange?,
     val after: String,
+    /** How many fixes this change accepted; a rewrite accepts none. */
+    val acceptedFixes: Int = 0,
   )
 
   companion object {
