@@ -773,9 +773,20 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
     }
 
     /**
-     * The user edited the field and the model is checking [text]. The collapsed overlay turns into
-     * a small loading indicator; an open sheet keeps its place. An empty field has nothing to
-     * check.
+     * The user is typing. Fixes for the text before this keystroke no longer line up with the
+     * field, so the overlay goes back to its bubble until typing stops and [onChecking] follows.
+     */
+    fun onTyping() {
+      val service = instance ?: return
+      service.overlayView?.post {
+        if (service.shownOrBeneath().isDocked) return@post
+        service.show(SuggestionOverlayState.Idle)
+      }
+    }
+
+    /**
+     * Typing has stopped and the model is checking [text]. The collapsed overlay turns into a small
+     * loading indicator; an open sheet keeps its place. An empty field has nothing to check.
      */
     fun onChecking(text: String) {
       val service = instance ?: return

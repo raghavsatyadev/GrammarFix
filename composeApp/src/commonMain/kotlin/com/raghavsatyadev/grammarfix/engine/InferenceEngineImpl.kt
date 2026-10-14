@@ -155,7 +155,11 @@ class InferenceEngineImpl(
   ): CorrectionResult {
     val startTime = kotlin.time.TimeSource.Monotonic.markNow()
 
-    val prompt = CorrectionPrompt.forTone(tone, text, fastMode = enforceNoThink)
+    // The model sees the text without the whitespace around it, which goes back on afterwards. A
+    // keyboard leaves a space after every word, and with one at the end the model handed
+    // "Hello How is your? " back untouched while it fixed the same sentence without it.
+    val core = text.trim()
+    val prompt = CorrectionPrompt.forTone(tone, core, fastMode = enforceNoThink)
 
     if (text.isBlank()) {
       // Nothing ran, so there is nothing to count: no row for an empty box.
@@ -175,7 +179,7 @@ class InferenceEngineImpl(
       try {
         busy {
           ensureLoaded(engineMode)
-          rewrite(prompt, text, engineMode)
+          rewrite(prompt, core, engineMode)
         }
       } catch (e: CancellationException) {
         throw e
@@ -204,7 +208,10 @@ class InferenceEngineImpl(
         )
       }
 
-    val correctedText = rewritten.text.ifBlank { text }
+    val correctedText =
+      text.takeWhile { it.isWhitespace() } +
+        rewritten.text.ifBlank { core } +
+        text.takeLastWhile { it.isWhitespace() }
 
     val diffs = GrammarDiffAnalyzer.computeDiff(text, correctedText)
     val elapsedMs = startTime.elapsedNow().inWholeMilliseconds

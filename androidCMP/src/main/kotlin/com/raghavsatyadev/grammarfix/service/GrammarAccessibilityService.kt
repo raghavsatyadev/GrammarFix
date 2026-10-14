@@ -53,6 +53,17 @@ internal fun needsAnalysis(
 ): Boolean = text != analysed && !(isPendingActive && text == pending)
 
 /**
+ * What the user has typed into a field, or "" when it only shows its hint.
+ *
+ * An empty field reports its hint as its text. Most say so with [showingHint]; WhatsApp's message
+ * box does not, and its "Message" was being sent to the model the moment a chat opened.
+ */
+internal fun typedText(text: CharSequence?, hint: CharSequence?, showingHint: Boolean): String {
+  val typed = text?.toString().orEmpty()
+  return if (showingHint || (hint != null && typed == hint.toString())) "" else typed
+}
+
+/**
  * Whether a field belongs to GrammarFix itself.
  *
  * The service is handed every editable field on the device, including the ones in our own app. Our
@@ -232,9 +243,8 @@ class GrammarAccessibilityService : AccessibilityService() {
   private fun focusedEditable(): AccessibilityNodeInfo? =
     rootInActiveWindow?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.takeIf { it.isEditable }
 
-  /** An empty field can report its hint as text; treat that as empty. */
   private fun AccessibilityNodeInfo.realText(): String =
-    if (isShowingHintText) "" else text?.toString().orEmpty()
+    typedText(text, hintText, isShowingHintText)
 
   private fun scheduleAnalysis(node: AccessibilityNodeInfo, delayMs: Long = DEBOUNCE_MS) {
     val text = node.realText()
@@ -247,14 +257,23 @@ class GrammarAccessibilityService : AccessibilityService() {
     // the selection the sheet was scoped to may no longer exist.
     if (undoStack.lastOrNull()?.after != text) clearUndo()
     reviewScope = null
-    FloatingWidgetService.onChecking(text)
     // An edit: any tone read of the old text stops here, model and all.
     toneDetector?.onTextChanged(text)
-    pendingText = text
     analysisJob?.cancel()
+    if (text.isBlank()) {
+      // An empty field has nothing to check, so nothing runs and no progress is shown.
+      pendingText = null
+      currentAnalysis = null
+      dismissed.clear()
+      FloatingWidgetService.onWordCleared()
+      return
+    }
+    pendingText = text
+    FloatingWidgetService.onTyping()
     analysisJob = serviceScope.launch {
+      // The progress shows only once the user has stopped typing for [delayMs].
       delay(delayMs)
-      if (text.isBlank()) dismissed.clear()
+      FloatingWidgetService.onChecking(text)
 
       // Inference takes seconds. If the user typed, cleared the field or applied a fix in the
       // meantime, the result describes text that no longer exists; showing it would offer a fix
@@ -610,7 +629,7 @@ class GrammarAccessibilityService : AccessibilityService() {
 
   companion object {
     private const val TAG = "GrammarAccessService"
-    private const val DEBOUNCE_MS = 300L
+    private const val DEBOUNCE_MS = 500L
     private const val MAX_UNDO = 20
     private const val KEYBOARD_RESTORE_DELAY_MS = 250L
 

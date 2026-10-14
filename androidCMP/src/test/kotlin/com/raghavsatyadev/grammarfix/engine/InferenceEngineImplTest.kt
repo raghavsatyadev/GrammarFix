@@ -43,6 +43,27 @@ class InferenceEngineImplTest {
     assertTrue(result.outputWordCount > 0)
   }
 
+  /** The model never sees the space a keyboard leaves at the end; the field keeps it. */
+  @Test
+  fun surroundingWhitespaceIsKeptAwayFromTheModel() = runBlocking {
+    var seen: CorrectionPrompt? = null
+    val recording =
+      object : LlmDriver {
+        override suspend fun generate(prompt: CorrectionPrompt, engineMode: EngineMode): String {
+          seen = prompt
+          return "Hello, how are you?"
+        }
+      }
+
+    val result =
+      InferenceEngineImpl(recording, modelPathProvider = { "/m.gguf" })
+        .generateCorrection(" Hello How is your? ", enforceNoThink = true)
+
+    assertEquals("Hello How is your?", seen?.userText)
+    assertEquals(" Hello, how are you? ", result.correctedText)
+    assertTrue(result.diffs.any { it.type != DiffType.UNCHANGED })
+  }
+
   @Test
   fun initialize_and_isModelLoaded_managesState() = runBlocking {
     assertFalse(engine.isModelLoaded())
