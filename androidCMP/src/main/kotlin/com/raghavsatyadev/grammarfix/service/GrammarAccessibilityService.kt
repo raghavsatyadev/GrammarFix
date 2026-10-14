@@ -67,6 +67,25 @@ internal fun needsAnalysis(
 internal fun isOurOwnField(fieldPackage: CharSequence?, ownPackage: String): Boolean =
   fieldPackage?.contentEquals(ownPackage) == true
 
+/**
+ * Whether the user has left the field the overlay was showing fixes for.
+ *
+ * Only a focus or window change can mean that: a text or selection event always comes from a field.
+ * With no editable field focused — the note was closed, the user went to another screen or app —
+ * the fixes describe text that is no longer in front of them, so they go. GrammarFix's own windows
+ * (the review sheet, the rewrite panel) taking focus is the user working with those fixes, not
+ * leaving them.
+ */
+internal fun leftTheField(
+  eventType: Int,
+  hasFocusedField: Boolean,
+  activeWindowIsOurs: Boolean,
+): Boolean =
+  (eventType == AccessibilityEvent.TYPE_VIEW_FOCUSED ||
+    eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) &&
+    !hasFocusedField &&
+    !activeWindowIsOurs
+
 class GrammarAccessibilityService : AccessibilityService() {
 
   enum class ApplyResult {
@@ -178,7 +197,12 @@ class GrammarAccessibilityService : AccessibilityService() {
         eventType == AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED ||
         eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
     ) {
-      val focusedNode = focusedEditable() ?: event.source?.takeIf { it.isEditable } ?: return
+      val focusedNode = focusedEditable() ?: event.source?.takeIf { it.isEditable }
+      if (focusedNode == null) {
+        val activeWindowIsOurs = isOurOwnField(rootInActiveWindow?.packageName, packageName)
+        if (leftTheField(eventType, hasFocusedField = false, activeWindowIsOurs)) dropSuggestions()
+        return
+      }
       if (isOurOwnField(focusedNode.packageName, packageName)) return
       scheduleAnalysis(focusedNode)
     }
@@ -193,6 +217,17 @@ class GrammarAccessibilityService : AccessibilityService() {
       .firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused }
       ?.root
       ?.packageName
+
+  /** Forgets the field the user left and puts the overlay back to its idle bubble. */
+  private fun dropSuggestions() {
+    analysisJob?.cancel()
+    pendingText = null
+    currentAnalysis = null
+    reviewScope = null
+    clearUndo()
+    toneDetector?.onTextChanged("")
+    FloatingWidgetService.onWordCleared()
+  }
 
   private fun focusedEditable(): AccessibilityNodeInfo? =
     rootInActiveWindow?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.takeIf { it.isEditable }
