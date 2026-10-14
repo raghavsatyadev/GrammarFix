@@ -78,9 +78,11 @@ private const val PROOFREAD_SYSTEM =
   "You are a proofreader. Fix every error in the user's text with the fewest possible edits.\n" +
     "Error types:\n" +
     "SPELL: misspelled word\n" +
-    "ORTH: capital letter at sentence start, for I and for names; missing apostrophe (cant)\n" +
+    "ORTH: capital letter at sentence start, for I, names, days and months; missing " +
+    "apostrophe (cant)\n" +
     "PUNCT: end punctuation; comma after a greeting and around a name addressed\n" +
     "VERB: wrong tense or form; subject-verb agreement\n" +
+    "PRON: pronoun case in a subject (me and her went -> she and I went)\n" +
     "NOUN: singular/plural\n" +
     "DET: missing or wrong article\n" +
     "PREP: wrong preposition\n" +

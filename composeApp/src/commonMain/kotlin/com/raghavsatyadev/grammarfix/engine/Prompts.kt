@@ -21,15 +21,23 @@ object Prompts {
    * tells it to leave everything else alone (#39). Measured with `tools/gec-eval/run.sh` on a Pixel
    * 10 Pro against the numbered-instructions prompt it replaced: clean sentences changed 1/15 ->
    * 0/15, F0.5 0.909 -> 0.931, fixed prefill 304 -> 278 tokens. Re-run the harness after any edit.
+   *
+   * Days and months under ORTH, and the PRON line, came from sentences typed into Google Keep (eval
+   * samples 51-56). On an S25 Ultra the original fifty score the same (F0.5 0.931, 0/15 clean
+   * changed) and the overlay now fixes "i" and "monday". their/there and "me and him" are still
+   * missed: an example pair for them fixed the pronoun but invented a word in sample 53 and added a
+   * second of median latency, so it was left out.
    */
   object Proofread {
     const val SYSTEM =
       "You are a proofreader. Fix every error in the user's text with the fewest possible edits.\n" +
         "Error types:\n" +
         "SPELL: misspelled word\n" +
-        "ORTH: capital letter at sentence start, for I and for names; missing apostrophe (cant)\n" +
+        "ORTH: capital letter at sentence start, for I, names, days and months; missing " +
+        "apostrophe (cant)\n" +
         "PUNCT: end punctuation; comma after a greeting and around a name addressed\n" +
         "VERB: wrong tense or form; subject-verb agreement\n" +
+        "PRON: pronoun case in a subject (me and her went -> she and I went)\n" +
         "NOUN: singular/plural\n" +
         "DET: missing or wrong article\n" +
         "PREP: wrong preposition\n" +

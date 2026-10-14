@@ -1,8 +1,8 @@
 package com.raghavsatyadev.grammarfix.engine
 
 /**
- * The sample set for issue #41: fifty sentences with the correct version of each written down by
- * hand, used to measure how the shipping engine actually behaves.
+ * The sample set for issue #41: fifty-six sentences with the correct version of each written down
+ * by hand, used to measure how the shipping engine actually behaves.
  *
  * **Fifteen of these are already correct.** That is deliberate and it is the point of the whole
  * exercise. A sample set where every sentence contains a mistake cannot tell us whether the model
@@ -11,8 +11,8 @@ package com.raghavsatyadev.grammarfix.engine
  * contractions and no formal structure, because those are exactly the sentences a model trained to
  * produce polished prose is tempted to "improve".
  *
- * The other thirty-five are the mistakes people make typing on a phone. Most mix several error
- * types in one sentence, the way real messages do; [category] names the dominant one.
+ * The other forty-one are the mistakes people make typing on a phone. Most mix several error types
+ * in one sentence, the way real messages do; [category] names the dominant one.
  */
 data class GecSample(
   val id: Int,
@@ -214,6 +214,45 @@ object GecEvalDataset {
         "mixed",
         "this is the most fastest way to do it",
         "This is the fastest way to do it.",
+      ),
+
+      // ---- Typed into Google Keep through the overlay on an S25 Ultra. The first prompt run
+      // missed "i", "monday", their/there and the pronoun case in these. ----
+      GecSample(
+        51,
+        "mixed",
+        "i has went to the market yesterday and buyed three apple.",
+        "I went to the market yesterday and bought three apples.",
+      ),
+      GecSample(
+        52,
+        "agreement",
+        "She dont like to goes to school on monday.",
+        "She doesn't like to go to school on Monday.",
+      ),
+      GecSample(
+        53,
+        "homophone",
+        "Their going to there house tomorow for dinner.",
+        "They're going to their house tomorrow for dinner.",
+      ),
+      GecSample(
+        54,
+        "pronoun",
+        "me and him was playing football when it start raining.",
+        "He and I were playing football when it started raining.",
+      ),
+      GecSample(
+        55,
+        "noun",
+        "The informations you gave me is very usefull, thank you.",
+        "The information you gave me is very useful, thank you.",
+      ),
+      GecSample(
+        56,
+        "tense",
+        "We was waiting since two hours but nobody have came.",
+        "We have been waiting for two hours but nobody has come.",
       ),
     )
 
