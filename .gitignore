@@ -138,3 +138,8 @@ progress/
 # Claude Code only scans .claude/skills/, so scripts/setup-env links each .agents/skills/<name>
 # there. The links are per-machine (junctions on Windows, symlinks elsewhere), never committed.
 .claude/skills/
+
+# Claude working notes (plan-keeper) — never commit
+PLAN.md
+DECISIONS.md
+HISTORY.md
