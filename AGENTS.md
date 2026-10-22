@@ -81,5 +81,5 @@ A green unit test is not device verification. Inspect the device with ARTEMIS, n
 `tmp/` (agent scratch), `memory/` (persistent local data such as device serials and coords),
 `.cache/` and every `.env` are git-ignored. Never commit credentials. Never put a token in a remote URL or
 `.git/config`; `gh` and the credential manager handle auth. Never clean `tmp/` unless the
-user asks — see [workspace-cleanup](.agents/skills/workspace-cleanup/SKILL.md). In `.remember/`,
-read only `now.md` and `recent.md`; open older logs only when the task names an old date or PR.
+user asks — see [workspace-cleanup](.agents/skills/workspace-cleanup/SKILL.md). In `.claude/`,
+read `PLAN.md`; open `HISTORY.md` only when the task names an old date or PR.
