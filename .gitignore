@@ -18,7 +18,6 @@ keystore.gradle
 local.properties
 release
 secret.properties
-composeApp/kotzilla.json
 
 ### Objective-C template
 # Xcode
