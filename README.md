@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/media/logo-512.png" width="112" alt="GrammarFix logo"></p>
+
 # GrammarFix
 
 **A Grammarly-style writing assistant that runs entirely on your phone.** GrammarFix checks what
