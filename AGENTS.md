@@ -16,8 +16,8 @@ Shared instructions for every coding agent in this repo — Claude, Gemini, Code
 - When done and checked, stop. Report in five lines or fewer, in ASD-STE100 Simplified Technical English.
 - Claude Code: medium effort for scoped edits; high for engine, native (`grammarfix_llama.cpp`) or prompt
   work. A second agent only for a review the user asked for.
-- Decision model: global skill `local-model`. Global skills live in `global_skills/` (no agent reads it
-  directly); install them with `bash global_skills/install.sh`.
+- Decision model: global skill `local-model`. Global skills come from the
+  agent-workflow repo (linked by its `bash install.sh`).
   Turn on the local decision model first (`bash ~/.local-model/lm-on`), then use `jgl`,
   `lm-ask`, `lm-rank` and `rg` as the skill says. Rule checks for `lm-diffcheck` (run before a
   review): [.agents/diff-checks.txt](.agents/diff-checks.txt).
