@@ -32,6 +32,8 @@ Shared instructions for every coding agent in this repo — Claude, Gemini, Code
 | [artemis-mobile-testing.md](.agents/rules/artemis-mobile-testing.md) | *on demand* — using ARTEMIS MCP tools; points to the upstream rules your agent should already have |
 | [branch-pr-policy.md](.agents/rules/branch-pr-policy.md) | *always* — see the summary below |
 | [parallel-agents.md](.agents/rules/parallel-agents.md) | the user asks for agents in parallel worktrees — pin the base commit, cap Gradle memory, clean up after |
+| [compose-previews.md](.agents/rules/compose-previews.md) | *on demand* — rendering a `@Preview` to an image with `android studio render-compose-preview` |
+| [perfetto-profiling.md](.agents/rules/perfetto-profiling.md) | *on demand* — recording or analyzing a Perfetto trace (jank, startup, CPU, memory) with `scripts/perfetto/trace.sh` |
 
 ## Skills — `.agents/skills/`
 
