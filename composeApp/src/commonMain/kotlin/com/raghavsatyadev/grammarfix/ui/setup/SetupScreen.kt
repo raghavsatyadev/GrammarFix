@@ -11,13 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Accessibility
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.rounded.Layers
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Stop
-import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,6 +45,12 @@ import grammarfix.composeapp.generated.resources.assistant_running
 import grammarfix.composeapp.generated.resources.assistant_stopped
 import grammarfix.composeapp.generated.resources.assistant_title
 import grammarfix.composeapp.generated.resources.download_status_ready
+import grammarfix.composeapp.generated.resources.ic_accessibility_filled
+import grammarfix.composeapp.generated.resources.ic_cloud_download_filled
+import grammarfix.composeapp.generated.resources.ic_layers_filled
+import grammarfix.composeapp.generated.resources.ic_play_arrow_filled
+import grammarfix.composeapp.generated.resources.ic_stop_filled
+import grammarfix.composeapp.generated.resources.ic_widgets_filled
 import grammarfix.composeapp.generated.resources.model_card_desc
 import grammarfix.composeapp.generated.resources.model_card_title
 import grammarfix.composeapp.generated.resources.model_required_body
@@ -64,6 +63,7 @@ import grammarfix.composeapp.generated.resources.perm_overlay_desc
 import grammarfix.composeapp.generated.resources.perm_overlay_title
 import grammarfix.composeapp.generated.resources.setup_intro
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /**
  * The floating assistant's permissions and on/off switch. Only Android has an assistant, so only
@@ -118,7 +118,7 @@ fun SetupScreen(
     PermissionCard(
       title = stringResource(Res.string.model_card_title),
       description = stringResource(Res.string.model_card_desc),
-      icon = Icons.Rounded.CloudDownload,
+      icon = vectorResource(Res.drawable.ic_cloud_download_filled),
       granted = isModelReady,
       onClick = onOpenModelTab,
       actionLabel = stringResource(Res.string.action_open_model),
@@ -127,21 +127,21 @@ fun SetupScreen(
     PermissionCard(
       title = stringResource(Res.string.perm_overlay_title),
       description = stringResource(Res.string.perm_overlay_desc),
-      icon = Icons.Rounded.Layers,
+      icon = vectorResource(Res.drawable.ic_layers_filled),
       granted = setup.hasOverlayPermission,
       onClick = setup.onOpenOverlaySettings,
     )
     PermissionCard(
       title = stringResource(Res.string.perm_a11y_title),
       description = stringResource(Res.string.perm_a11y_desc),
-      icon = Icons.Rounded.Accessibility,
+      icon = vectorResource(Res.drawable.ic_accessibility_filled),
       granted = setup.isAccessibilityEnabled,
       onClick = setup.onOpenAccessibilitySettings,
     )
 
     SectionCard(
       title = stringResource(Res.string.assistant_title),
-      icon = Icons.Rounded.Widgets,
+      icon = vectorResource(Res.drawable.ic_widgets_filled),
       trailing = {
         StatusPill(
           text =
@@ -161,7 +161,7 @@ fun SetupScreen(
       Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
         if (setup.isAssistantRunning) {
           OutlinedButton(shapes = ButtonDefaults.shapes(), onClick = setup.onStopAssistant) {
-            Icon(Icons.Rounded.Stop, contentDescription = null)
+            Icon(vectorResource(Res.drawable.ic_stop_filled), contentDescription = null)
             Text(stringResource(Res.string.action_stop_assistant), Modifier.padding(start = 8.dp))
           }
         } else {
@@ -174,7 +174,7 @@ fun SetupScreen(
             },
             enabled = setup.hasOverlayPermission && setup.isAccessibilityEnabled,
           ) {
-            Icon(Icons.Rounded.PlayArrow, contentDescription = null)
+            Icon(vectorResource(Res.drawable.ic_play_arrow_filled), contentDescription = null)
             Text(stringResource(Res.string.action_start_assistant), Modifier.padding(start = 8.dp))
           }
         }
@@ -226,7 +226,7 @@ private fun PermissionCard(
 private fun ModelRequiredDialog(onOpenModelTab: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
     onDismissRequest = onDismiss,
-    icon = { Icon(Icons.Rounded.CloudDownload, contentDescription = null) },
+    icon = { Icon(vectorResource(Res.drawable.ic_cloud_download_filled), contentDescription = null) },
     title = { Text(stringResource(Res.string.model_required_title)) },
     text = { Text(stringResource(Res.string.model_required_body)) },
     confirmButton = {

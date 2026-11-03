@@ -18,15 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Clear
-import androidx.compose.material.icons.rounded.EditNote
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -43,7 +34,6 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +47,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raghavsatyadev.grammarfix.engine.BenchmarkSentences
 import com.raghavsatyadev.grammarfix.engine.CorrectionResult
 import com.raghavsatyadev.grammarfix.engine.DefaultTonePresets
@@ -80,6 +71,14 @@ import grammarfix.composeapp.generated.resources.benchmark_run
 import grammarfix.composeapp.generated.resources.benchmark_running
 import grammarfix.composeapp.generated.resources.editor_label
 import grammarfix.composeapp.generated.resources.editor_placeholder
+import grammarfix.composeapp.generated.resources.ic_arrow_forward_filled
+import grammarfix.composeapp.generated.resources.ic_auto_fix_high_filled
+import grammarfix.composeapp.generated.resources.ic_check_filled
+import grammarfix.composeapp.generated.resources.ic_clear_filled
+import grammarfix.composeapp.generated.resources.ic_edit_note_filled
+import grammarfix.composeapp.generated.resources.ic_palette_filled
+import grammarfix.composeapp.generated.resources.ic_play_arrow_filled
+import grammarfix.composeapp.generated.resources.ic_speed_filled
 import grammarfix.composeapp.generated.resources.inference_failed
 import grammarfix.composeapp.generated.resources.no_issues
 import grammarfix.composeapp.generated.resources.overlay_accept
@@ -102,6 +101,7 @@ import grammarfix.composeapp.generated.resources.suggestions_title
 import grammarfix.composeapp.generated.resources.tone_picker_title
 import grammarfix.composeapp.generated.resources.tone_result_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /** Playground tab: type or load a sentence, see and apply the model's fixes, and its speed. */
 @Composable
@@ -110,15 +110,15 @@ fun PlaygroundScreen(
   contentPadding: PaddingValues,
   modifier: Modifier = Modifier,
 ) {
-  val text by viewModel.inputText.collectAsState()
-  val isAnalyzing by viewModel.isAnalyzing.collectAsState()
-  val result by viewModel.correctionResult.collectAsState()
-  val analysis by viewModel.analysis.collectAsState()
-  val benchmarkProgress by viewModel.benchmarkProgress.collectAsState()
-  val ramHistory by viewModel.ramUsageHistory.collectAsState()
-  val ramMb by viewModel.currentRamUsageMb.collectAsState()
-  val tones by viewModel.tonePresets.collectAsState()
-  val selectedTone by viewModel.selectedTone.collectAsState()
+  val text by viewModel.inputText.collectAsStateWithLifecycle()
+  val isAnalyzing by viewModel.isAnalyzing.collectAsStateWithLifecycle()
+  val result by viewModel.correctionResult.collectAsStateWithLifecycle()
+  val analysis by viewModel.analysis.collectAsStateWithLifecycle()
+  val benchmarkProgress by viewModel.benchmarkProgress.collectAsStateWithLifecycle()
+  val ramHistory by viewModel.ramUsageHistory.collectAsStateWithLifecycle()
+  val ramMb by viewModel.currentRamUsageMb.collectAsStateWithLifecycle()
+  val tones by viewModel.tonePresets.collectAsStateWithLifecycle()
+  val selectedTone by viewModel.selectedTone.collectAsStateWithLifecycle()
 
   Column(
     modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(contentPadding),
@@ -187,7 +187,7 @@ private fun TonePickerCard(
   selectedId: String,
   onSelect: (String) -> Unit,
 ) {
-  SectionCard(title = stringResource(Res.string.tone_picker_title), icon = Icons.Rounded.Palette) {
+  SectionCard(title = stringResource(Res.string.tone_picker_title), icon = vectorResource(Res.drawable.ic_palette_filled)) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
       tones.forEach { tone ->
         val selected = tone.id == selectedId
@@ -197,7 +197,7 @@ private fun TonePickerCard(
           label = { Text(toneName(tone), style = MaterialTheme.typography.labelMedium) },
           leadingIcon =
             if (selected) {
-              { Icon(Icons.Rounded.Check, contentDescription = null, Modifier.size(18.dp)) }
+              { Icon(vectorResource(Res.drawable.ic_check_filled), contentDescription = null, Modifier.size(18.dp)) }
             } else null,
         )
       }
@@ -215,7 +215,7 @@ private fun ToneResultCard(
 ) {
   SectionCard(
     title = stringResource(Res.string.tone_result_title),
-    icon = Icons.Rounded.AutoFixHigh,
+    icon = vectorResource(Res.drawable.ic_auto_fix_high_filled),
     trailing = { StatusPill(toneLabel, StatusTone.ACTIVE) },
   ) {
     Surface(
@@ -250,7 +250,7 @@ private fun SamplesCard(
   val total = BenchmarkSentences.all.size
   SectionCard(
     title = stringResource(Res.string.samples_title),
-    icon = Icons.Rounded.AutoFixHigh,
+    icon = vectorResource(Res.drawable.ic_auto_fix_high_filled),
   ) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
       BenchmarkSentences.all.forEachIndexed { index, sentence ->
@@ -283,7 +283,7 @@ private fun SamplesCard(
           )
         )
       } else {
-        Icon(Icons.Rounded.PlayArrow, contentDescription = null)
+        Icon(vectorResource(Res.drawable.ic_play_arrow_filled), contentDescription = null)
         Spacer(Modifier.width(8.dp))
         Text(stringResource(Res.string.benchmark_run, total.toString()))
       }
@@ -301,7 +301,7 @@ private fun EditorCard(
 ) {
   SectionCard(
     title = stringResource(Res.string.editor_label),
-    icon = Icons.Rounded.EditNote,
+    icon = vectorResource(Res.drawable.ic_edit_note_filled),
     trailing = {
       if (isAnalyzing) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -325,7 +325,7 @@ private fun EditorCard(
       trailingIcon = {
         if (text.isNotEmpty()) {
           IconButton(shapes = IconButtonDefaults.shapes(), onClick = { onTextChange("") }) {
-            Icon(Icons.Rounded.Clear, contentDescription = stringResource(Res.string.action_clear))
+            Icon(vectorResource(Res.drawable.ic_clear_filled), contentDescription = stringResource(Res.string.action_clear))
           }
         }
       },
@@ -337,7 +337,7 @@ private fun EditorCard(
       enabled = text.isNotBlank() && !isAnalyzing,
       modifier = Modifier.fillMaxWidth(),
     ) {
-      Icon(Icons.Rounded.Check, contentDescription = null)
+      Icon(vectorResource(Res.drawable.ic_check_filled), contentDescription = null)
       Spacer(Modifier.width(8.dp))
       Text(stringResource(Res.string.action_check_now))
     }
@@ -352,7 +352,7 @@ private fun SuggestionsCard(
 ) {
   SectionCard(
     title = stringResource(Res.string.suggestions_title),
-    icon = Icons.Rounded.AutoFixHigh,
+    icon = vectorResource(Res.drawable.ic_auto_fix_high_filled),
     trailing = {
       if (suggestions.isEmpty()) {
         StatusPill(stringResource(Res.string.no_issues), StatusTone.POSITIVE)
@@ -410,7 +410,7 @@ private fun SuggestionRow(suggestion: TextSuggestion, onAccept: () -> Unit) {
           }
           if (suggestion.kind == SuggestionKind.REPLACE) {
             Icon(
-              Icons.AutoMirrored.Rounded.ArrowForward,
+              vectorResource(Res.drawable.ic_arrow_forward_filled),
               contentDescription = null,
               tint = MaterialTheme.colorScheme.onSurfaceVariant,
               modifier = Modifier.padding(horizontal = 6.dp).size(14.dp),
@@ -427,7 +427,7 @@ private fun SuggestionRow(suggestion: TextSuggestion, onAccept: () -> Unit) {
         }
       }
       FilledTonalIconButton(shapes = IconButtonDefaults.shapes(), onClick = onAccept) {
-        Icon(Icons.Rounded.Check, contentDescription = stringResource(Res.string.overlay_accept))
+        Icon(vectorResource(Res.drawable.ic_check_filled), contentDescription = stringResource(Res.string.overlay_accept))
       }
     }
   }
@@ -437,7 +437,7 @@ private fun SuggestionRow(suggestion: TextSuggestion, onAccept: () -> Unit) {
 private fun PerformanceCard(result: CorrectionResult, ramHistory: List<Float>, ramMb: Float) {
   SectionCard(
     title = stringResource(Res.string.perf_title),
-    icon = Icons.Rounded.Speed,
+    icon = vectorResource(Res.drawable.ic_speed_filled),
     trailing = {
       StatusPill(
         text = stringResource(Res.string.perf_ms, result.latencyMs.toString()),

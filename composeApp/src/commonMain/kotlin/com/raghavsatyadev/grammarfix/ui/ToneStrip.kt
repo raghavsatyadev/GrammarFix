@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Mood
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.raghavsatyadev.grammarfix.engine.ToneCheck
 import com.raghavsatyadev.grammarfix.engine.ToneStatus
 import grammarfix.composeapp.generated.resources.Res
+import grammarfix.composeapp.generated.resources.ic_mood_filled
 import grammarfix.composeapp.generated.resources.tone_detect_action
 import grammarfix.composeapp.generated.resources.tone_detect_failed
 import grammarfix.composeapp.generated.resources.tone_detecting
@@ -44,6 +43,7 @@ import grammarfix.composeapp.generated.resources.tone_label_uncertain
 import grammarfix.composeapp.generated.resources.tone_label_urgent
 import grammarfix.composeapp.generated.resources.tone_reads_as
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /** What the overlay says about the tone of the text it is showing (#32). */
 @Immutable
@@ -89,7 +89,7 @@ internal fun ToneStrip(state: ToneStripState, onDetect: () -> Unit, modifier: Mo
         label = { Text(stringResource(Res.string.tone_detect_action)) },
         leadingIcon = {
           Icon(
-            Icons.Rounded.Mood,
+            vectorResource(Res.drawable.ic_mood_filled),
             contentDescription = null,
             modifier = Modifier.size(AssistChipDefaults.IconSize),
           )

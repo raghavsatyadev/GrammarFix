@@ -20,11 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Spellcheck
-import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -41,11 +36,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import grammarfix.composeapp.generated.resources.Res
+import grammarfix.composeapp.generated.resources.ic_cloud_download_filled
+import grammarfix.composeapp.generated.resources.ic_lock_filled
+import grammarfix.composeapp.generated.resources.ic_spellcheck_filled
+import grammarfix.composeapp.generated.resources.ic_widgets_filled
 import grammarfix.composeapp.generated.resources.onboarding_assistant_body
 import grammarfix.composeapp.generated.resources.onboarding_assistant_title
 import grammarfix.composeapp.generated.resources.onboarding_done
@@ -58,11 +56,13 @@ import grammarfix.composeapp.generated.resources.onboarding_skip
 import grammarfix.composeapp.generated.resources.onboarding_welcome_body
 import grammarfix.composeapp.generated.resources.onboarding_welcome_title
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 private data class OnboardingPage(
-  val icon: ImageVector,
+  val icon: DrawableResource,
   val title: StringResource,
   val body: StringResource,
 )
@@ -70,17 +70,17 @@ private data class OnboardingPage(
 private val WelcomePages =
   listOf(
     OnboardingPage(
-      Icons.Rounded.Spellcheck,
+      Res.drawable.ic_spellcheck_filled,
       Res.string.onboarding_welcome_title,
       Res.string.onboarding_welcome_body,
     ),
     OnboardingPage(
-      Icons.Rounded.Lock,
+      Res.drawable.ic_lock_filled,
       Res.string.onboarding_private_title,
       Res.string.onboarding_private_body,
     ),
     OnboardingPage(
-      Icons.Rounded.CloudDownload,
+      Res.drawable.ic_cloud_download_filled,
       Res.string.onboarding_model_title,
       Res.string.onboarding_model_body,
     ),
@@ -88,7 +88,7 @@ private val WelcomePages =
 
 private val AssistantPage =
   OnboardingPage(
-    Icons.Rounded.Widgets,
+    Res.drawable.ic_widgets_filled,
     Res.string.onboarding_assistant_title,
     Res.string.onboarding_assistant_body,
   )
@@ -158,7 +158,7 @@ private fun PageContent(page: OnboardingPage) {
       contentAlignment = Alignment.Center,
     ) {
       Icon(
-        imageVector = page.icon,
+        imageVector = vectorResource(page.icon),
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onPrimaryContainer,
         modifier = Modifier.size(64.dp),

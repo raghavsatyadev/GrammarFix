@@ -2,7 +2,6 @@
 
 package com.raghavsatyadev.grammarfix.ui
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.expandHorizontally
@@ -27,17 +26,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.Memory
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.rounded.EditNote
-import androidx.compose.material.icons.rounded.Insights
-import androidx.compose.material.icons.rounded.Memory
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -48,22 +36,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.raghavsatyadev.grammarfix.data.AppSettingsRepository
 import com.raghavsatyadev.grammarfix.engine.DownloadStatus
 import com.raghavsatyadev.grammarfix.engine.GrammarAssistantViewModel
@@ -78,27 +68,39 @@ import com.raghavsatyadev.grammarfix.ui.tone.ToneScreen
 import grammarfix.composeapp.generated.resources.Res
 import grammarfix.composeapp.generated.resources.app_name
 import grammarfix.composeapp.generated.resources.app_subtitle
+import grammarfix.composeapp.generated.resources.ic_edit_note
+import grammarfix.composeapp.generated.resources.ic_edit_note_filled
+import grammarfix.composeapp.generated.resources.ic_insights
+import grammarfix.composeapp.generated.resources.ic_insights_filled
+import grammarfix.composeapp.generated.resources.ic_memory
+import grammarfix.composeapp.generated.resources.ic_memory_filled
+import grammarfix.composeapp.generated.resources.ic_palette
+import grammarfix.composeapp.generated.resources.ic_palette_filled
+import grammarfix.composeapp.generated.resources.ic_tune
+import grammarfix.composeapp.generated.resources.ic_tune_filled
 import grammarfix.composeapp.generated.resources.tab_insights
 import grammarfix.composeapp.generated.resources.tab_model
 import grammarfix.composeapp.generated.resources.tab_playground
 import grammarfix.composeapp.generated.resources.tab_setup
 import grammarfix.composeapp.generated.resources.tab_tones
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 enum class AppTab(
   val title: StringResource,
-  val selectedIcon: ImageVector,
-  val icon: ImageVector,
+  val selectedIcon: DrawableResource,
+  val icon: DrawableResource,
 ) {
-  MODEL(Res.string.tab_model, Icons.Rounded.Memory, Icons.Outlined.Memory),
-  INSIGHTS(Res.string.tab_insights, Icons.Rounded.Insights, Icons.Outlined.Insights),
-  PLAYGROUND(Res.string.tab_playground, Icons.Rounded.EditNote, Icons.Outlined.EditNote),
-  TONES(Res.string.tab_tones, Icons.Rounded.Palette, Icons.Outlined.Palette),
-  SETUP(Res.string.tab_setup, Icons.Rounded.Tune, Icons.Outlined.Tune),
+  MODEL(Res.string.tab_model, Res.drawable.ic_memory_filled, Res.drawable.ic_memory),
+  INSIGHTS(Res.string.tab_insights, Res.drawable.ic_insights_filled, Res.drawable.ic_insights),
+  PLAYGROUND(Res.string.tab_playground, Res.drawable.ic_edit_note_filled, Res.drawable.ic_edit_note),
+  TONES(Res.string.tab_tones, Res.drawable.ic_palette_filled, Res.drawable.ic_palette),
+  SETUP(Res.string.tab_setup, Res.drawable.ic_tune_filled, Res.drawable.ic_tune),
 }
 
 /** Tabs that exist only as developer tools and must never reach a release build. */
@@ -137,10 +139,19 @@ fun GrammarFixApp(
 ) {
   AppTheme {
     val tabs = visibleAppTabs(assistantSetup != null, showDeveloperTools)
-    var selected by rememberSaveable { mutableStateOf(defaultAppTab(showDeveloperTools)) }
-    val downloadProgress by viewModel.downloadProgress.collectAsState()
+    val startTab = defaultAppTab(showDeveloperTools)
+    val backStack = rememberNavBackStack(TabNavConfig, TabRoute(startTab))
+    // The start tab sits at the bottom; any other tab goes on top of it, so Back returns to it.
+    val select: (AppTab) -> Unit = { tab ->
+      val target = TabRoute(tab)
+      if (backStack.last() != target) {
+        while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+        if (backStack.first() != target) backStack.add(target)
+      }
+    }
+    val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
     val isModelReady = downloadProgress.status == DownloadStatus.COMPLETED
-    val onboardingDone by settings.onboardingDone.collectAsState()
+    val onboardingDone by settings.onboardingDone.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     when (onboardingDone) {
@@ -154,7 +165,7 @@ fun GrammarFixApp(
           hasAssistantSetup = assistantSetup != null,
           onDone = {
             // The model is the first thing the app needs, so a new user lands where it is fetched.
-            if (!isModelReady) selected = AppTab.MODEL
+            if (!isModelReady) select(AppTab.MODEL)
             scope.launch { settings.setOnboardingDone() }
           },
           modifier = modifier,
@@ -166,7 +177,8 @@ fun GrammarFixApp(
 
     // A restored selection can name a tab this build does not have; fall back rather than render
     // an empty body with nothing highlighted in the bar.
-    val current = if (selected in tabs) selected else defaultAppTab(showDeveloperTools)
+    val selected = (backStack.last() as TabRoute).tab
+    val current = if (selected in tabs) selected else startTab
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
@@ -203,7 +215,7 @@ fun GrammarFixApp(
             .padding(bottom = 12.dp),
           contentAlignment = Alignment.Center,
         ) {
-          FloatingTabBar(tabs = tabs, selected = current, onSelect = { selected = it })
+          FloatingTabBar(tabs = tabs, selected = current, onSelect = select)
         }
       },
     ) { innerPadding ->
@@ -217,27 +229,39 @@ fun GrammarFixApp(
         )
       val enter = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
       val exit = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
-      AnimatedContent(
-        targetState = current,
-        transitionSpec = { fadeIn(enter) togetherWith fadeOut(exit) },
-        label = "tab",
-      ) { tab ->
-        when (tab) {
-          AppTab.MODEL -> ModelScreen(viewModel, contentPadding)
-          AppTab.INSIGHTS -> InsightsScreen(contentPadding)
-          AppTab.PLAYGROUND -> PlaygroundScreen(viewModel, contentPadding)
-          AppTab.TONES -> ToneScreen(contentPadding)
-          AppTab.SETUP ->
-            assistantSetup?.let {
-              SetupScreen(
-                setup = it,
-                isModelReady = isModelReady,
-                onOpenModelTab = { selected = AppTab.MODEL },
-                contentPadding = contentPadding,
-              )
+      val transition = fadeIn(enter) togetherWith fadeOut(exit)
+      NavDisplay(
+        backStack = backStack,
+        onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+        entryDecorators =
+          listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+          ),
+        transitionSpec = { transition },
+        popTransitionSpec = { transition },
+        predictivePopTransitionSpec = { transition },
+        entryProvider =
+          entryProvider {
+            entry<TabRoute> { route ->
+              when (if (route.tab in tabs) route.tab else startTab) {
+                AppTab.MODEL -> ModelScreen(viewModel, contentPadding)
+                AppTab.INSIGHTS -> InsightsScreen(contentPadding)
+                AppTab.PLAYGROUND -> PlaygroundScreen(viewModel, contentPadding)
+                AppTab.TONES -> ToneScreen(contentPadding)
+                AppTab.SETUP ->
+                  assistantSetup?.let {
+                    SetupScreen(
+                      setup = it,
+                      isModelReady = isModelReady,
+                      onOpenModelTab = { select(AppTab.MODEL) },
+                      contentPadding = contentPadding,
+                    )
+                  }
+              }
             }
-        }
-      }
+          },
+      )
     }
   }
 }
@@ -282,7 +306,7 @@ private fun FloatingTabBar(tabs: List<AppTab>, selected: AppTab, onSelect: (AppT
               .padding(horizontal = 14.dp, vertical = 8.dp),
         ) {
           Icon(
-            imageVector = if (isSelected) tab.selectedIcon else tab.icon,
+            imageVector = vectorResource(if (isSelected) tab.selectedIcon else tab.icon),
             contentDescription = title,
             tint = content,
           )

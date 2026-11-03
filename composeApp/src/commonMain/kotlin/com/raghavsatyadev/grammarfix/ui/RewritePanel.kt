@@ -16,16 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.Notes
-import androidx.compose.material.icons.automirrored.rounded.Send
-import androidx.compose.material.icons.automirrored.rounded.ShortText
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Autorenew
-import androidx.compose.material.icons.rounded.BusinessCenter
-import androidx.compose.material.icons.rounded.SentimentSatisfied
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -70,6 +60,15 @@ import com.raghavsatyadev.grammarfix.engine.DiffType
 import com.raghavsatyadev.grammarfix.engine.TonePreset
 import com.raghavsatyadev.grammarfix.ui.tone.toneName
 import grammarfix.composeapp.generated.resources.Res
+import grammarfix.composeapp.generated.resources.ic_arrow_back_filled
+import grammarfix.composeapp.generated.resources.ic_auto_fix_high_filled
+import grammarfix.composeapp.generated.resources.ic_autorenew_filled
+import grammarfix.composeapp.generated.resources.ic_business_center_filled
+import grammarfix.composeapp.generated.resources.ic_notes_filled
+import grammarfix.composeapp.generated.resources.ic_send_filled
+import grammarfix.composeapp.generated.resources.ic_sentiment_satisfied_filled
+import grammarfix.composeapp.generated.resources.ic_short_text_filled
+import grammarfix.composeapp.generated.resources.ic_tune_filled
 import grammarfix.composeapp.generated.resources.overlay_dismiss
 import grammarfix.composeapp.generated.resources.overlay_rewrite_back
 import grammarfix.composeapp.generated.resources.overlay_rewrite_failed
@@ -87,6 +86,7 @@ import grammarfix.composeapp.generated.resources.overlay_rewrite_title_shorten
 import grammarfix.composeapp.generated.resources.overlay_rewrite_unchanged
 import grammarfix.composeapp.generated.resources.overlay_rewrite_use
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /**
  * The rewrite area's fixed height. The title, the skeleton and the answer all share it, so a chip
@@ -116,7 +116,7 @@ internal fun RewritePanel(
       header = {
         IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onCloseRewrite) {
           Icon(
-            Icons.AutoMirrored.Rounded.ArrowBack,
+            vectorResource(Res.drawable.ic_arrow_back_filled),
             contentDescription = stringResource(Res.string.overlay_rewrite_back),
           )
         }
@@ -305,7 +305,7 @@ private fun InstructionBar(actions: SuggestionOverlayActions) {
           enabled = draft.isNotBlank(),
         ) {
           Icon(
-            Icons.AutoMirrored.Rounded.Send,
+            vectorResource(Res.drawable.ic_send_filled),
             contentDescription = stringResource(Res.string.overlay_rewrite_instruction_send),
           )
         }
@@ -345,15 +345,16 @@ private fun rewriteTitle(state: SuggestionOverlayState.Rewrite): String {
   }
 }
 
+@Composable
 private fun TonePreset.icon(): ImageVector =
   when (id) {
-    DefaultTonePresets.POLISH_ID -> Icons.Rounded.AutoFixHigh
-    DefaultTonePresets.REPHRASE_ID -> Icons.Rounded.Autorenew
-    DefaultTonePresets.SHORTEN_ID -> Icons.AutoMirrored.Rounded.ShortText
-    DefaultTonePresets.FRIENDLY_ID -> Icons.Rounded.SentimentSatisfied
-    DefaultTonePresets.FORMAL_ID -> Icons.Rounded.BusinessCenter
-    DefaultTonePresets.ELABORATE_ID -> Icons.AutoMirrored.Rounded.Notes
-    else -> Icons.Rounded.Tune
+    DefaultTonePresets.POLISH_ID -> vectorResource(Res.drawable.ic_auto_fix_high_filled)
+    DefaultTonePresets.REPHRASE_ID -> vectorResource(Res.drawable.ic_autorenew_filled)
+    DefaultTonePresets.SHORTEN_ID -> vectorResource(Res.drawable.ic_short_text_filled)
+    DefaultTonePresets.FRIENDLY_ID -> vectorResource(Res.drawable.ic_sentiment_satisfied_filled)
+    DefaultTonePresets.FORMAL_ID -> vectorResource(Res.drawable.ic_business_center_filled)
+    DefaultTonePresets.ELABORATE_ID -> vectorResource(Res.drawable.ic_notes_filled)
+    else -> vectorResource(Res.drawable.ic_tune_filled)
   }
 
 /** [text] with the spans [rewriteChanges] finds tinted in the theme's accent. */
