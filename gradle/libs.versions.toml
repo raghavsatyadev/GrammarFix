@@ -24,23 +24,22 @@ versionCode = "2"
 versionName = "0.0.2"
 
 # Plugin Versions
-agp = "9.5.0-alpha08"
-kotlin = "2.5.0-Beta1"
-compose-icons-extended-mp = "1.7.3"
+agp = "9.6.0-alpha02"
+kotlin = "2.5.0-Beta2"
 screenshot = "0.0.1-alpha16"
 ksp = "2.3.12"
-room3 = "3.1.0-alpha01"
+room3 = "3.1.0-alpha03"
 
 # Library Versions
 activity = "1.14.0-alpha03"
-compose-constraint-mp = "0.8.2"
-compose-material3-mp = "1.13.0-alpha01"
-compose-multiplatform = "1.13.0-alpha01"
-compose-ui = "1.13.0-alpha03"
+compose-material3-mp = "1.13.0-beta01"
+compose-multiplatform = "1.13.0-beta01"
+compose-ui = "1.13.0-beta02"
 coroutines = "1.11.0"
 koin = "4.2.2"
 lifecycle-mp = "2.11.0"
-serialization = "1.12.0-RC"
+navigation3-mp = "1.2.0"
+serialization = "1.12.0"
 sqlite = "2.8.0-alpha01"
 sonarqube = "7.5.0.8588"
 splashscreen = "1.2.0"
@@ -54,7 +53,7 @@ espresso = "3.7.0"
 robolectric = "4.17"
 
 # Networking & On-device AI
-ktor = "3.6.0"
+ktor = "3.6.1"
 
 [libraries]
 # Room / SQLite (KMP persistence)
@@ -81,8 +80,6 @@ compose-material3-mp = { module = "org.jetbrains.compose.material3:material3", v
 compose-components-resources-mp = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
 compose-ui-tooling-preview-mp = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
 compose-runtime-mp = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
-compose-constraint-mp = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "compose-constraint-mp" }
-compose-icons-extended-mp = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-icons-extended-mp" }
 
 #Kotlin
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
@@ -91,6 +88,8 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 # Lifecycle Multiplatform
 lifecycle-viewmodel-compose-mp = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle-mp" }
 lifecycle-runtime-compose-mp = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-mp" }
+lifecycle-viewmodel-navigation3-mp = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle-mp" }
+navigation3-ui-mp = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3-mp" }
 
 # Koin
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
@@ -155,8 +154,6 @@ compose-mp = [
     "compose-material3-mp",
     "compose-components-resources-mp",
     "compose-runtime-mp",
-    "compose-constraint-mp",
-    "compose-icons-extended-mp",
 ]
 koin-mp = [
     "koin-core",
@@ -166,4 +163,6 @@ koin-mp = [
 lifecycle-mp = [
     "lifecycle-viewmodel-compose-mp",
     "lifecycle-runtime-compose-mp",
+    "lifecycle-viewmodel-navigation3-mp",
+    "navigation3-ui-mp",
 ]

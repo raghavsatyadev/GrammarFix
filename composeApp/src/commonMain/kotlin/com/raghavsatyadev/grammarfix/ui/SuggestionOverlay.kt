@@ -20,12 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.DeleteOutline
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +52,11 @@ import com.raghavsatyadev.grammarfix.engine.TonePreset
 import com.raghavsatyadev.grammarfix.engine.isWithin
 import com.raghavsatyadev.grammarfix.library.support.theme.AppTheme
 import grammarfix.composeapp.generated.resources.Res
+import grammarfix.composeapp.generated.resources.ic_auto_fix_high_filled
+import grammarfix.composeapp.generated.resources.ic_close_filled
+import grammarfix.composeapp.generated.resources.ic_delete_outline_filled
+import grammarfix.composeapp.generated.resources.ic_undo_filled
+import grammarfix.composeapp.generated.resources.ic_warning_filled
 import grammarfix.composeapp.generated.resources.overlay_accept_one
 import grammarfix.composeapp.generated.resources.overlay_bubble_tap
 import grammarfix.composeapp.generated.resources.overlay_checking
@@ -68,6 +67,7 @@ import grammarfix.composeapp.generated.resources.overlay_model_unavailable
 import grammarfix.composeapp.generated.resources.overlay_open_sheet
 import grammarfix.composeapp.generated.resources.overlay_undo
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /** What the floating overlay shows. */
 @Immutable
@@ -328,7 +328,7 @@ private fun IdleBubble(actions: SuggestionOverlayActions, canUndo: Boolean) {
     ) {
       Box(Modifier.size(SmallBubbleDiameter), contentAlignment = Alignment.Center) {
         Icon(
-          Icons.Rounded.AutoFixHigh,
+          vectorResource(Res.drawable.ic_auto_fix_high_filled),
           contentDescription = stringResource(Res.string.overlay_listening),
           modifier = Modifier.size(18.dp),
         )
@@ -376,7 +376,7 @@ private fun UndoChip(actions: SuggestionOverlayActions) {
   ) {
     Box(Modifier.size(SmallBubbleDiameter), contentAlignment = Alignment.Center) {
       Icon(
-        Icons.AutoMirrored.Rounded.Undo,
+        vectorResource(Res.drawable.ic_undo_filled),
         contentDescription = stringResource(Res.string.overlay_undo),
         modifier = Modifier.size(18.dp),
       )
@@ -460,7 +460,7 @@ private fun ReviewPill(
           modifier = Modifier.size(36.dp),
         ) {
           Icon(
-            Icons.Rounded.DeleteOutline,
+            vectorResource(Res.drawable.ic_delete_outline_filled),
             contentDescription = stringResource(Res.string.overlay_dismiss),
             modifier = Modifier.size(20.dp),
           )
@@ -542,7 +542,7 @@ fun DismissTarget(armed: Boolean) {
         ) {
           Box(contentAlignment = Alignment.Center) {
             Icon(
-              Icons.Rounded.Close,
+              vectorResource(Res.drawable.ic_close_filled),
               contentDescription = stringResource(Res.string.overlay_close_assistant),
             )
           }
@@ -565,7 +565,7 @@ private fun ErrorPill(message: String) {
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
-      Icon(Icons.Rounded.Warning, contentDescription = null)
+      Icon(vectorResource(Res.drawable.ic_warning_filled), contentDescription = null)
       Spacer(Modifier.width(12.dp))
       Column {
         Text(

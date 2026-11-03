@@ -17,13 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.DeleteOutline
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Mood
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Thermostat
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -40,7 +33,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +43,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raghavsatyadev.grammarfix.engine.DefaultTonePresets
 import com.raghavsatyadev.grammarfix.engine.TonePreset
 import com.raghavsatyadev.grammarfix.engine.hasEditedPrompt
@@ -66,6 +59,12 @@ import grammarfix.composeapp.generated.resources.action_delete_tone
 import grammarfix.composeapp.generated.resources.action_edit_tone
 import grammarfix.composeapp.generated.resources.action_reset_prompt
 import grammarfix.composeapp.generated.resources.action_save
+import grammarfix.composeapp.generated.resources.ic_add_filled
+import grammarfix.composeapp.generated.resources.ic_delete_outline_filled
+import grammarfix.composeapp.generated.resources.ic_edit_filled
+import grammarfix.composeapp.generated.resources.ic_mood_filled
+import grammarfix.composeapp.generated.resources.ic_palette_filled
+import grammarfix.composeapp.generated.resources.ic_thermostat_filled
 import grammarfix.composeapp.generated.resources.tone_builtin_title
 import grammarfix.composeapp.generated.resources.tone_custom_title
 import grammarfix.composeapp.generated.resources.tone_delete_message
@@ -91,6 +90,7 @@ import grammarfix.composeapp.generated.resources.tone_shorten
 import grammarfix.composeapp.generated.resources.tone_thinking_desc
 import grammarfix.composeapp.generated.resources.tone_thinking_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /** The tone's name: a translated string for the tones we ship, the user's own words otherwise. */
@@ -113,7 +113,7 @@ fun ToneScreen(
   modifier: Modifier = Modifier,
   viewModel: ToneViewModel = koinViewModel(),
 ) {
-  val state by viewModel.uiState.collectAsState()
+  val state by viewModel.uiState.collectAsStateWithLifecycle()
   ToneScreen(
     state = state,
     onEvent = viewModel::onEvent,
@@ -149,7 +149,7 @@ fun ToneScreen(
 
     SectionCard(
       title = stringResource(Res.string.tone_builtin_title),
-      icon = Icons.Rounded.Palette,
+      icon = vectorResource(Res.drawable.ic_palette_filled),
     ) {
       Text(
         text = stringResource(Res.string.tone_intro),
@@ -172,7 +172,7 @@ fun ToneScreen(
       }
     }
 
-    SectionCard(title = stringResource(Res.string.tone_custom_title), icon = Icons.Rounded.Edit) {
+    SectionCard(title = stringResource(Res.string.tone_custom_title), icon = vectorResource(Res.drawable.ic_edit_filled)) {
       if (state.custom.isEmpty()) {
         Text(
           text = stringResource(Res.string.tone_no_custom),
@@ -200,7 +200,7 @@ fun ToneScreen(
         onClick = { onEvent(ToneEvent.Create) },
         modifier = Modifier.fillMaxWidth(),
       ) {
-        Icon(Icons.Rounded.Add, contentDescription = null)
+        Icon(vectorResource(Res.drawable.ic_add_filled), contentDescription = null)
         Spacer(Modifier.width(8.dp))
         Text(stringResource(Res.string.action_add_tone))
       }
@@ -218,7 +218,7 @@ fun ToneScreen(
 private fun ToneDetectionCard(state: ToneUiState, onEvent: (ToneEvent) -> Unit) {
   SectionCard(
     title = stringResource(Res.string.tone_detection_title),
-    icon = Icons.Rounded.Mood,
+    icon = vectorResource(Res.drawable.ic_mood_filled),
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Column(Modifier.weight(1f).padding(end = 8.dp)) {
@@ -240,7 +240,7 @@ private fun ToneDetectionCard(state: ToneUiState, onEvent: (ToneEvent) -> Unit) 
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(
-        Icons.Rounded.Thermostat,
+        vectorResource(Res.drawable.ic_thermostat_filled),
         contentDescription = null,
         tint = MaterialTheme.colorScheme.tertiary,
         modifier = Modifier.size(18.dp),
@@ -321,14 +321,14 @@ private fun TonePresetRow(
       }
       IconButton(shapes = IconButtonDefaults.shapes(), onClick = onEdit) {
         Icon(
-          Icons.Rounded.Edit,
+          vectorResource(Res.drawable.ic_edit_filled),
           contentDescription = stringResource(Res.string.action_edit_tone, name),
         )
       }
       if (onDelete != null) {
         IconButton(shapes = IconButtonDefaults.shapes(), onClick = onDelete) {
           Icon(
-            Icons.Rounded.DeleteOutline,
+            vectorResource(Res.drawable.ic_delete_outline_filled),
             contentDescription = stringResource(Res.string.action_delete_tone, name),
           )
         }
@@ -419,7 +419,7 @@ private fun ToneEditorDialog(editor: ToneEditorState, onEvent: (ToneEvent) -> Un
 private fun DeleteToneDialog(name: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
     onDismissRequest = onDismiss,
-    icon = { Icon(Icons.Rounded.DeleteOutline, contentDescription = null) },
+    icon = { Icon(vectorResource(Res.drawable.ic_delete_outline_filled), contentDescription = null) },
     title = { Text(stringResource(Res.string.action_delete_tone, name)) },
     text = { Text(stringResource(Res.string.tone_delete_message)) },
     confirmButton = {

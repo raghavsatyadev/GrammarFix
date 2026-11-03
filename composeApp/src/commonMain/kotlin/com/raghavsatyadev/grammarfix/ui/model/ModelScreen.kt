@@ -10,12 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.rounded.DeleteOutline
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -27,12 +21,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raghavsatyadev.grammarfix.engine.DownloadProgress
 import com.raghavsatyadev.grammarfix.engine.DownloadStatus
 import com.raghavsatyadev.grammarfix.engine.GrammarAssistantViewModel
@@ -54,11 +48,17 @@ import grammarfix.composeapp.generated.resources.download_status_paused
 import grammarfix.composeapp.generated.resources.download_status_ready
 import grammarfix.composeapp.generated.resources.download_title
 import grammarfix.composeapp.generated.resources.download_url_label
+import grammarfix.composeapp.generated.resources.ic_bolt_filled
+import grammarfix.composeapp.generated.resources.ic_cloud_download_filled
+import grammarfix.composeapp.generated.resources.ic_delete_outline_filled
+import grammarfix.composeapp.generated.resources.ic_download_filled
+import grammarfix.composeapp.generated.resources.ic_pause_filled
 import grammarfix.composeapp.generated.resources.last_latency
 import grammarfix.composeapp.generated.resources.thinking_off
 import grammarfix.composeapp.generated.resources.thinking_on
 import grammarfix.composeapp.generated.resources.thinking_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /** Model tab: getting the offline model onto the device. */
 @Composable
@@ -67,10 +67,10 @@ fun ModelScreen(
   contentPadding: PaddingValues,
   modifier: Modifier = Modifier,
 ) {
-  val modelUrl by viewModel.modelUrlInput.collectAsState()
-  val downloadProgress by viewModel.downloadProgress.collectAsState()
-  val isFastMode by viewModel.isNonThinkingMode.collectAsState()
-  val lastResult by viewModel.correctionResult.collectAsState()
+  val modelUrl by viewModel.modelUrlInput.collectAsStateWithLifecycle()
+  val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
+  val isFastMode by viewModel.isNonThinkingMode.collectAsStateWithLifecycle()
+  val lastResult by viewModel.correctionResult.collectAsStateWithLifecycle()
 
   Column(
     modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(contentPadding),
@@ -118,7 +118,7 @@ private fun ModelDownloadCard(
 
   SectionCard(
     title = stringResource(Res.string.download_title),
-    icon = Icons.Rounded.CloudDownload,
+    icon = vectorResource(Res.drawable.ic_cloud_download_filled),
     trailing = { StatusPill(statusText, tone) },
   ) {
     OutlinedTextField(
@@ -151,17 +151,17 @@ private fun ModelDownloadCard(
         DownloadStatus.NOT_DOWNLOADED,
         DownloadStatus.ERROR ->
           Button(shapes = ButtonDefaults.shapes(), onClick = onStart) {
-            Icon(Icons.Rounded.Download, contentDescription = null)
+            Icon(vectorResource(Res.drawable.ic_download_filled), contentDescription = null)
             Text(stringResource(Res.string.action_download_model), Modifier.padding(start = 8.dp))
           }
         DownloadStatus.DOWNLOADING ->
           OutlinedButton(shapes = ButtonDefaults.shapes(), onClick = onPause) {
-            Icon(Icons.Rounded.Pause, contentDescription = null)
+            Icon(vectorResource(Res.drawable.ic_pause_filled), contentDescription = null)
             Text(stringResource(Res.string.action_pause), Modifier.padding(start = 8.dp))
           }
         DownloadStatus.PAUSED ->
           Button(shapes = ButtonDefaults.shapes(), onClick = onStart) {
-            Icon(Icons.Rounded.Download, contentDescription = null)
+            Icon(vectorResource(Res.drawable.ic_download_filled), contentDescription = null)
             Text(stringResource(Res.string.action_resume), Modifier.padding(start = 8.dp))
           }
         DownloadStatus.COMPLETED ->
@@ -171,7 +171,7 @@ private fun ModelDownloadCard(
             colors =
               ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
           ) {
-            Icon(Icons.Rounded.DeleteOutline, contentDescription = null)
+            Icon(vectorResource(Res.drawable.ic_delete_outline_filled), contentDescription = null)
             Text(stringResource(Res.string.action_delete_model), Modifier.padding(start = 8.dp))
           }
       }
@@ -215,7 +215,7 @@ private fun DownloadProgressRow(progress: DownloadProgress) {
 private fun FastModeCard(enabled: Boolean, lastLatencyMs: Long?, onToggle: () -> Unit) {
   SectionCard(
     title = stringResource(Res.string.thinking_title),
-    icon = Icons.Rounded.Bolt,
+    icon = vectorResource(Res.drawable.ic_bolt_filled),
     trailing = { Switch(checked = enabled, onCheckedChange = { onToggle() }) },
   ) {
     Text(

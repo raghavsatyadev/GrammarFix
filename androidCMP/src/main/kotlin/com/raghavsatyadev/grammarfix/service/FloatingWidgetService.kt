@@ -20,7 +20,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.ComposeView
@@ -29,6 +28,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -235,11 +235,11 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         setViewTreeLifecycleOwner(this@FloatingWidgetService)
         setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
         setContent {
-          val current by state.collectAsState()
-          val tone by (toneDetector?.check ?: noTone).collectAsState()
-          val autoDetect by (settings?.detectToneWhileTyping ?: autoOff).collectAsState()
-          val canUndo by GrammarAccessibilityService.canUndo.collectAsState()
-          val space by dockSpace.collectAsState()
+          val current by state.collectAsStateWithLifecycle()
+          val tone by (toneDetector?.check ?: noTone).collectAsStateWithLifecycle()
+          val autoDetect by (settings?.detectToneWhileTyping ?: autoOff).collectAsStateWithLifecycle()
+          val canUndo by GrammarAccessibilityService.canUndo.collectAsStateWithLifecycle()
+          val space by dockSpace.collectAsStateWithLifecycle()
           CompositionLocalProvider(LocalDockSpace provides space) {
             SuggestionOverlay(
               current,
@@ -468,7 +468,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         setViewTreeLifecycleOwner(this@FloatingWidgetService)
         setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
         setContent {
-          val armed by dismissArmed.collectAsState()
+          val armed by dismissArmed.collectAsStateWithLifecycle()
           DismissTarget(armed)
         }
       }

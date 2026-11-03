@@ -24,13 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.DoneAll
-import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -69,6 +62,12 @@ import com.raghavsatyadev.grammarfix.engine.SuggestionKind
 import com.raghavsatyadev.grammarfix.engine.TextSuggestion
 import com.raghavsatyadev.grammarfix.engine.kind
 import grammarfix.composeapp.generated.resources.Res
+import grammarfix.composeapp.generated.resources.ic_auto_awesome_filled
+import grammarfix.composeapp.generated.resources.ic_auto_fix_high_filled
+import grammarfix.composeapp.generated.resources.ic_check_filled
+import grammarfix.composeapp.generated.resources.ic_done_all_filled
+import grammarfix.composeapp.generated.resources.ic_expand_more_filled
+import grammarfix.composeapp.generated.resources.ic_undo_filled
 import grammarfix.composeapp.generated.resources.overlay_accept
 import grammarfix.composeapp.generated.resources.overlay_accept_all
 import grammarfix.composeapp.generated.resources.overlay_all_clear_body
@@ -88,6 +87,7 @@ import grammarfix.composeapp.generated.resources.overlay_undo
 import grammarfix.composeapp.generated.resources.overlay_working_title
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /**
  * The sheet the overlay opens into: every suggestion at once, each read inside the sentence it
@@ -121,14 +121,14 @@ internal fun ReviewSheet(
       if (visible.size > 1) {
         IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onAcceptAll) {
           Icon(
-            Icons.Rounded.DoneAll,
+            vectorResource(Res.drawable.ic_done_all_filled),
             contentDescription = stringResource(Res.string.overlay_accept_all, visible.size),
           )
         }
       }
       IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onCloseSheet) {
         Icon(
-          Icons.Rounded.ExpandMore,
+          vectorResource(Res.drawable.ic_expand_more_filled),
           contentDescription = stringResource(Res.string.overlay_close_sheet),
         )
       }
@@ -205,7 +205,7 @@ internal fun AllClearSheet(
       RewriteButton(actions)
       IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onCloseSheet) {
         Icon(
-          Icons.Rounded.ExpandMore,
+          vectorResource(Res.drawable.ic_expand_more_filled),
           contentDescription = stringResource(Res.string.overlay_close_sheet),
         )
       }
@@ -222,7 +222,7 @@ internal fun AllClearSheet(
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
       ) {
         Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
-          Icon(Icons.Rounded.Check, contentDescription = null, modifier = Modifier.size(32.dp))
+          Icon(vectorResource(Res.drawable.ic_check_filled), contentDescription = null, modifier = Modifier.size(32.dp))
         }
       }
       Text(
@@ -249,7 +249,7 @@ internal fun AllClearSheet(
 private fun UndoButton(actions: SuggestionOverlayActions) {
   IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onUndo) {
     Icon(
-      Icons.AutoMirrored.Rounded.Undo,
+      vectorResource(Res.drawable.ic_undo_filled),
       contentDescription = stringResource(Res.string.overlay_undo),
     )
   }
@@ -267,7 +267,7 @@ internal fun WorkingSheet(actions: SuggestionOverlayActions) {
     header = {
       IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onCloseSheet) {
         Icon(
-          Icons.Rounded.ExpandMore,
+          vectorResource(Res.drawable.ic_expand_more_filled),
           contentDescription = stringResource(Res.string.overlay_close_sheet),
         )
       }
@@ -294,7 +294,7 @@ internal fun WorkingSheet(actions: SuggestionOverlayActions) {
 private fun RewriteButton(actions: SuggestionOverlayActions) {
   IconButton(shapes = IconButtonDefaults.shapes(), onClick = actions.onOpenRewrite) {
     Icon(
-      Icons.Rounded.AutoAwesome,
+      vectorResource(Res.drawable.ic_auto_awesome_filled),
       contentDescription = stringResource(Res.string.overlay_open_rewrite),
     )
   }
@@ -406,7 +406,7 @@ internal fun OverlaySheet(
           modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, bottom = 4.dp),
         ) {
           Icon(
-            Icons.Rounded.AutoFixHigh,
+            vectorResource(Res.drawable.ic_auto_fix_high_filled),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp),

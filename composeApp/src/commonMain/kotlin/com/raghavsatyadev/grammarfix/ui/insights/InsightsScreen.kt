@@ -18,11 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoFixHigh
-import androidx.compose.material.icons.rounded.Insights
-import androidx.compose.material.icons.rounded.ShowChart
-import androidx.compose.material.icons.rounded.Spellcheck
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
@@ -31,7 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,10 +38,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raghavsatyadev.grammarfix.ui.components.SectionCard
 import com.raghavsatyadev.grammarfix.ui.components.StatusPill
 import com.raghavsatyadev.grammarfix.ui.components.StatusTone
 import grammarfix.composeapp.generated.resources.Res
+import grammarfix.composeapp.generated.resources.ic_auto_fix_high_filled
+import grammarfix.composeapp.generated.resources.ic_insights_filled
+import grammarfix.composeapp.generated.resources.ic_show_chart_filled
+import grammarfix.composeapp.generated.resources.ic_spellcheck_filled
 import grammarfix.composeapp.generated.resources.insights_activity_caption
 import grammarfix.composeapp.generated.resources.insights_activity_description
 import grammarfix.composeapp.generated.resources.insights_activity_title
@@ -66,6 +65,7 @@ import grammarfix.composeapp.generated.resources.insights_points
 import grammarfix.composeapp.generated.resources.insights_vs_previous
 import grammarfix.composeapp.generated.resources.insights_words_title
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -78,7 +78,7 @@ fun InsightsScreen(
   // ON_RESUME is replayed when the tab is opened and fires again when the user comes back to the
   // app, so both ways of returning re-read the figures.
   LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
-  val state by viewModel.state.collectAsState()
+  val state by viewModel.state.collectAsStateWithLifecycle()
   InsightsScreen(state = state, contentPadding = contentPadding, modifier = modifier)
 }
 
@@ -132,7 +132,7 @@ fun InsightsScreen(
     insights.cleanPercent?.let { clean ->
       SectionCard(
         title = stringResource(Res.string.insights_clean_title),
-        icon = Icons.Rounded.Spellcheck,
+        icon = vectorResource(Res.drawable.ic_spellcheck_filled),
         trailing = { CleanDelta(clean, insights.previousCleanPercent) },
       ) {
         Text(
@@ -146,7 +146,7 @@ fun InsightsScreen(
 
     SectionCard(
       title = stringResource(Res.string.insights_activity_title),
-      icon = Icons.Rounded.ShowChart,
+      icon = vectorResource(Res.drawable.ic_show_chart_filled),
     ) {
       // A chart a screen reader cannot read is decoration. The description is built here, where
       // the strings are, because a semantics block is not a composable scope.
@@ -166,7 +166,7 @@ fun InsightsScreen(
 
     SectionCard(
       title = stringResource(Res.string.insights_breakdown_title),
-      icon = Icons.Rounded.AutoFixHigh,
+      icon = vectorResource(Res.drawable.ic_auto_fix_high_filled),
     ) {
       FixBreakdown(insights)
     }
@@ -297,7 +297,7 @@ private fun EmptyState() {
       contentAlignment = Alignment.Center,
     ) {
       Icon(
-        Icons.Rounded.Insights,
+        vectorResource(Res.drawable.ic_insights_filled),
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onPrimaryContainer,
         modifier = Modifier.size(56.dp),
