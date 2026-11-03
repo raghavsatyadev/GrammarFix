@@ -20,8 +20,8 @@ cmake = "4.1.2"
 buildTools = "36.1.0"
 
 # App Version Codes
-versionCode = "2"
-versionName = "0.0.2"
+versionCode = "3"
+versionName = "0.0.3"
 
 # Plugin Versions
 agp = "9.6.0-alpha02"
