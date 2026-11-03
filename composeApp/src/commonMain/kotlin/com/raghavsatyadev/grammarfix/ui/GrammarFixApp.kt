@@ -1,4 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(
+  ExperimentalMaterial3Api::class,
+  ExperimentalMaterial3ExpressiveApi::class,
+  KoinExperimentalAPI::class,
+)
 
 package com.raghavsatyadev.grammarfix.ui
 
@@ -35,7 +39,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.WideNavigationRail
+import androidx.compose.material3.WideNavigationRailItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -43,14 +50,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -58,13 +66,8 @@ import com.raghavsatyadev.grammarfix.data.AppSettingsRepository
 import com.raghavsatyadev.grammarfix.engine.DownloadStatus
 import com.raghavsatyadev.grammarfix.engine.GrammarAssistantViewModel
 import com.raghavsatyadev.grammarfix.library.support.theme.AppTheme
-import com.raghavsatyadev.grammarfix.ui.insights.InsightsScreen
-import com.raghavsatyadev.grammarfix.ui.model.ModelScreen
 import com.raghavsatyadev.grammarfix.ui.onboarding.OnboardingScreen
-import com.raghavsatyadev.grammarfix.ui.playground.PlaygroundScreen
 import com.raghavsatyadev.grammarfix.ui.setup.AssistantSetup
-import com.raghavsatyadev.grammarfix.ui.setup.SetupScreen
-import com.raghavsatyadev.grammarfix.ui.tone.ToneScreen
 import grammarfix.composeapp.generated.resources.Res
 import grammarfix.composeapp.generated.resources.app_name
 import grammarfix.composeapp.generated.resources.app_subtitle
@@ -89,7 +92,9 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 
 enum class AppTab(
   val title: StringResource,
@@ -98,7 +103,11 @@ enum class AppTab(
 ) {
   MODEL(Res.string.tab_model, Res.drawable.ic_memory_filled, Res.drawable.ic_memory),
   INSIGHTS(Res.string.tab_insights, Res.drawable.ic_insights_filled, Res.drawable.ic_insights),
-  PLAYGROUND(Res.string.tab_playground, Res.drawable.ic_edit_note_filled, Res.drawable.ic_edit_note),
+  PLAYGROUND(
+    Res.string.tab_playground,
+    Res.drawable.ic_edit_note_filled,
+    Res.drawable.ic_edit_note,
+  ),
   TONES(Res.string.tab_tones, Res.drawable.ic_palette_filled, Res.drawable.ic_palette),
   SETUP(Res.string.tab_setup, Res.drawable.ic_tune_filled, Res.drawable.ic_tune),
 }
@@ -153,6 +162,7 @@ fun GrammarFixApp(
     val isModelReady = downloadProgress.status == DownloadStatus.COMPLETED
     val onboardingDone by settings.onboardingDone.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val entries = koinEntryProvider<NavKey>()
 
     when (onboardingDone) {
       // Still reading the stored flag: a blank frame, not a flash of the wrong screen.
@@ -180,87 +190,115 @@ fun GrammarFixApp(
     val selected = (backStack.last() as TabRoute).tab
     val current = if (selected in tabs) selected else startTab
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    // Wide windows (tablets, unfolded foldables, desktop) get a side rail; phones the floating bar.
+    val windowWidth =
+      with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
+    val wide = windowWidth >= WideLayoutMinWidth
 
-    Scaffold(
-      modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-      containerColor = MaterialTheme.colorScheme.surface,
-      topBar = {
-        TopAppBar(
-          title = {
-            Column {
-              Text(
-                text = stringResource(Res.string.app_name),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-              )
-              Text(
-                text = stringResource(Res.string.app_subtitle),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-              )
-            }
-          },
-          scrollBehavior = scrollBehavior,
-          colors =
-            TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.surface,
-              scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-            ),
-        )
-      },
-      bottomBar = {
-        Box(
-          Modifier.fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(bottom = 12.dp),
-          contentAlignment = Alignment.Center,
-        ) {
-          FloatingTabBar(tabs = tabs, selected = current, onSelect = select)
-        }
-      },
-    ) { innerPadding ->
-      val layoutDirection = LocalLayoutDirection.current
-      val contentPadding =
-        PaddingValues(
-          start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
-          end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
-          top = innerPadding.calculateTopPadding() + 8.dp,
-          bottom = innerPadding.calculateBottomPadding() + 16.dp,
-        )
-      val enter = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
-      val exit = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
-      val transition = fadeIn(enter) togetherWith fadeOut(exit)
-      NavDisplay(
-        backStack = backStack,
-        onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
-        entryDecorators =
-          listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-          ),
-        transitionSpec = { transition },
-        popTransitionSpec = { transition },
-        predictivePopTransitionSpec = { transition },
-        entryProvider =
-          entryProvider {
-            entry<TabRoute> { route ->
-              when (if (route.tab in tabs) route.tab else startTab) {
-                AppTab.MODEL -> ModelScreen(viewModel, contentPadding)
-                AppTab.INSIGHTS -> InsightsScreen(contentPadding)
-                AppTab.PLAYGROUND -> PlaygroundScreen(viewModel, contentPadding)
-                AppTab.TONES -> ToneScreen(contentPadding)
-                AppTab.SETUP ->
-                  assistantSetup?.let {
-                    SetupScreen(
-                      setup = it,
-                      isModelReady = isModelReady,
-                      onOpenModelTab = { select(AppTab.MODEL) },
-                      contentPadding = contentPadding,
-                    )
-                  }
+    Row(modifier.fillMaxSize()) {
+      if (wide) TabRail(tabs = tabs, selected = current, onSelect = select)
+      Scaffold(
+        modifier =
+          Modifier.weight(1f).fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+          TopAppBar(
+            title = {
+              Column {
+                Text(
+                  text = stringResource(Res.string.app_name),
+                  style = MaterialTheme.typography.titleLarge,
+                  fontWeight = FontWeight.Bold,
+                )
+                Text(
+                  text = stringResource(Res.string.app_subtitle),
+                  style = MaterialTheme.typography.labelSmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
               }
+            },
+            scrollBehavior = scrollBehavior,
+            colors =
+              TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+              ),
+          )
+        },
+        bottomBar = {
+          if (!wide) {
+            Box(
+              Modifier.fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(bottom = 12.dp),
+              contentAlignment = Alignment.Center,
+            ) {
+              FloatingTabBar(tabs = tabs, selected = current, onSelect = select)
             }
-          },
+          }
+        },
+      ) { innerPadding ->
+        val layoutDirection = LocalLayoutDirection.current
+        val contentPadding =
+          PaddingValues(
+            start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
+            end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
+            top = innerPadding.calculateTopPadding() + 8.dp,
+            bottom = innerPadding.calculateBottomPadding() + 16.dp,
+          )
+        val enter = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
+        val exit = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
+        val transition = fadeIn(enter) togetherWith fadeOut(exit)
+        val host =
+          TabHost(
+            viewModel = viewModel,
+            contentPadding = contentPadding,
+            tabs = tabs,
+            startTab = startTab,
+            assistantSetup = assistantSetup,
+            isModelReady = isModelReady,
+            select = select,
+          )
+        CompositionLocalProvider(LocalTabHost provides host) {
+          NavDisplay(
+            backStack = backStack,
+            onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+            entryDecorators =
+              listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+              ),
+            transitionSpec = { transition },
+            popTransitionSpec = { transition },
+            predictivePopTransitionSpec = { transition },
+            entryProvider = entries,
+          )
+        }
+      }
+    }
+  }
+}
+
+/** Window width from which the tabs move to a side rail (Material's medium width class). */
+private val WideLayoutMinWidth = 600.dp
+
+/** The tabs as an M3 Expressive side rail, for wide windows. */
+@Composable
+private fun TabRail(tabs: List<AppTab>, selected: AppTab, onSelect: (AppTab) -> Unit) {
+  WideNavigationRail {
+    tabs.forEach { tab ->
+      val isSelected = tab == selected
+      WideNavigationRailItem(
+        selected = isSelected,
+        onClick = { onSelect(tab) },
+        icon = {
+          Icon(
+            vectorResource(if (isSelected) tab.selectedIcon else tab.icon),
+            contentDescription = null,
+          )
+        },
+        label = { Text(stringResource(tab.title)) },
+        railExpanded = false,
       )
     }
   }

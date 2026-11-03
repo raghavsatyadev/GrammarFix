@@ -18,6 +18,7 @@ import com.raghavsatyadev.grammarfix.engine.TonePresetRepository
 import com.raghavsatyadev.grammarfix.engine.TonePresetStore
 import com.raghavsatyadev.grammarfix.engine.ToneRecorder
 import com.raghavsatyadev.grammarfix.ui.insights.InsightsViewModel
+import com.raghavsatyadev.grammarfix.ui.tabNavigationModule
 import com.raghavsatyadev.grammarfix.ui.tone.ToneViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +65,6 @@ val appModule = module {
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
   startKoin {
     appDeclaration()
-    modules(appModule)
+    modules(appModule, tabNavigationModule)
   }
 }
