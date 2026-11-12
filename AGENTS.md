@@ -26,6 +26,7 @@ Shared instructions for every coding agent in this repo — Claude, Gemini, Code
 
 | Rule | Read it when |
 | --- | --- |
+| [project.md](.agents/rules/project.md) | *always* — this app's overrides of the shared rules and skills (theme, build, git, device notes); wins over them |
 | [android-build.md](.agents/rules/android-build.md) | before calling any task done — the code must compile |
 | [format.md](.agents/rules/format.md) | touching any Kotlin — ktfmt Google style is mandatory |
 | [pure-local-llm-inference.md](.agents/rules/pure-local-llm-inference.md) | changing grammar/spell-correction logic or prompts — every fix comes from the on-device LLM (`llamaAndroid` → llama.cpp); never regex or dictionaries |

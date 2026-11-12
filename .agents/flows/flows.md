@@ -14,8 +14,8 @@ A floating pill tab bar at the bottom: **Model**, **Insights**, **Playground** (
 **Tones**, **Setup** (Android only). Only the selected tab shows its label; the others are icons,
 so target them by content description.
 
-* **Maestro replay:** `flows/tabs.yaml`. Flows 2 and 3 also have replays
-  (`model-status.yaml`, `playground.yaml`); see SKILL.md.
+* **Maestro replay:** `tabs.yaml`. Flows 2 and 3 also have replays
+  (`model-status.yaml`, `playground.yaml`); in this folder.
 
 * **Primary (ARTEMIS):**
   ```text
@@ -137,3 +137,18 @@ idle bubble (wand icon) → pill (count badge, "Replace “x”", fix, delete ic
 * Verified sentence: `she go to market becos she need suger` → 5 fixes.
 * Grammarly draws a near-identical pill in the same spot; drag ours away (swipe on its body)
   before reading it, and check window owners as in SKILL.md gotcha 6.
+
+---
+
+## App notes (moved from the old SKILL.md)
+
+- Maestro: `tabs.yaml` (every tab opens), `model-status.yaml` (offline model Ready or
+  downloadable), `playground.yaml` ("Hello how is you?" gets an "are" suggestion; needs the model).
+  Maestro unbinds `GrammarAccessibilityService` while it runs, so overlay and other-app flows stay
+  on ARTEMIS.
+- Logs: `adb logcat -s GrammarFixLlama` (model/inference), `adb logcat -s GRAMMARFIX_PHYSICAL_BENCHMARK`.
+- Model: `bash $D files` → `qwen3-1.7b-int4.gguf`, 1 282 439 264 bytes when complete.
+  `pm clear` and `connectedDebugAndroidTest` both delete it.
+- Lookalike popups: Grammarly (`com.grammarly.android.keyboard`) shows a dark pill with a red count
+  badge above the keyboard; Gboard proofreads too. Check the window owner is
+  `com.raghavsatyadev.grammarfix` before crediting a suggestion.

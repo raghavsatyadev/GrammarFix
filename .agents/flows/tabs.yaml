@@ -1,5 +1,5 @@
 # Visit every tab and check one landmark on each. Tabs are icons; Maestro matches their
-# content descriptions. Run: maestro test .agents/skills/android-device-test/flows/tabs.yaml
+# content descriptions. Run: maestro test .agents/flows/tabs.yaml
 appId: com.raghavsatyadev.grammarfix
 name: Tabs
 ---
